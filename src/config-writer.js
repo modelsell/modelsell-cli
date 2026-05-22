@@ -3,12 +3,49 @@ import path from 'node:path';
 import TOML from '@iarna/toml';
 
 export const DEFAULT_BASE_URL = 'https://www.modelsell.com';
-export const DEFAULT_TARGETS = ['codex', 'claude', 'gemini'];
+export const DEFAULT_TARGETS = ['codex', 'claude', 'gemini', 'openclaw'];
 
 const DEFAULT_MODELS = {
   codex: 'gpt-5.5',
   claude: 'claude-sonnet-4-6',
-  gemini: 'gemini-3.1-pro-preview'
+  gemini: 'gemini-3.1-pro-preview',
+  openclaw: 'gpt-5.5'
+};
+
+const OPENCLAW_MODEL_CONFIG = {
+  providers: {
+    modelsell: {
+      api: 'openai-responses',
+      baseUrl: '${OPENAI_BASE_URL}',
+      apiKey: '${OPENAI_API_KEY}',
+      models: [
+        { id: 'gpt-5.5', name: 'GPT-5.5', contextWindow: 400000, maxTokens: 128000 },
+        { id: 'kimi-k2.5', name: 'Kimi K2.5', contextWindow: 400000, maxTokens: 128000 },
+        { id: 'MiniMax/MiniMax-M2.7', name: 'MiniMax M2.7', contextWindow: 400000, maxTokens: 128000 },
+        { id: 'qwen3.6-plus', name: 'Qwen 3.6 Plus', contextWindow: 400000, maxTokens: 128000 },
+        { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro Preview', contextWindow: 400000, maxTokens: 128000 },
+        { id: 'glm-5.1', name: 'GLM-5.1', contextWindow: 400000, maxTokens: 128000 }
+      ]
+    },
+    'modelsell-anthropic': {
+      api: 'anthropic-messages',
+      baseUrl: '${ANTHROPIC_BASE_URL}',
+      apiKey: '${ANTHROPIC_API_KEY}',
+      models: [
+        { id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6', contextWindow: 200000, maxTokens: 128000 },
+        { id: 'claude-opus-4-6', name: 'Claude Opus 4.6', contextWindow: 200000, maxTokens: 128000 }
+      ]
+    }
+  },
+  primaryModel: 'modelsell/gpt-5.5',
+  fallbackModels: [
+    'modelsell/kimi-k2.5',
+    'modelsell/qwen3.6-plus',
+    'modelsell/gemini-3.1-pro-preview',
+    'modelsell/glm-5.1',
+    'modelsell-anthropic/claude-sonnet-4-6',
+    'modelsell-anthropic/claude-opus-4-6'
+  ]
 };
 
 export function getDefaultModel(target) {
@@ -26,6 +63,8 @@ export async function applyConfiguration(options) {
       results.push(await configureClaude(normalized));
     } else if (target === 'gemini') {
       results.push(await configureGemini(normalized));
+    } else if (target === 'openclaw') {
+      results.push(await configureOpenClaw(normalized));
     } else {
       throw new Error(`Unsupported target: ${target}`);
     }
@@ -124,6 +163,49 @@ async function configureGemini(options) {
   return { target: 'gemini', files: [settingsPath, envPath] };
 }
 
+async function configureOpenClaw(options) {
+  const filePath = path.join(options.homeDir, '.openclaw', 'openclaw.json');
+  const envPath = path.join(options.homeDir, '.openclaw', '.env');
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await backupIfExists(filePath);
+  await backupIfExists(envPath);
+
+  const config = await readJson(filePath);
+  const agentModels = openClawAgentModelAliases(OPENCLAW_MODEL_CONFIG.providers);
+
+  config.agents = mergePlain(config.agents, {
+    defaults: mergePlain(config.agents?.defaults, {
+      model: mergePlain(config.agents?.defaults?.model, {
+        primary: OPENCLAW_MODEL_CONFIG.primaryModel,
+        fallbacks: [...OPENCLAW_MODEL_CONFIG.fallbackModels]
+      }),
+      models: mergePlain(config.agents?.defaults?.models, agentModels)
+    })
+  });
+  config.models = mergePlain(config.models, {
+    providers: mergePlain(config.models?.providers, cloneJson(OPENCLAW_MODEL_CONFIG.providers))
+  });
+
+  await writeJson(filePath, config);
+  await writeEnvironmentFile(envPath, {
+    OPENAI_BASE_URL: ensureV1Url(options.baseUrl),
+    OPENAI_API_KEY: options.apiKey,
+    ANTHROPIC_BASE_URL: options.baseUrl,
+    ANTHROPIC_API_KEY: options.apiKey
+  });
+  return { target: 'openclaw', files: [filePath, envPath] };
+}
+
+function openClawAgentModelAliases(providers) {
+  const aliases = {};
+  for (const [providerName, provider] of Object.entries(providers)) {
+    for (const model of provider.models) {
+      aliases[`${providerName}/${model.id}`] = { alias: model.name };
+    }
+  }
+  return aliases;
+}
+
 function pickModel(options, target) {
   return options.models[target] || options.model || getDefaultModel(target);
 }
@@ -208,6 +290,10 @@ function isPlainObject(value) {
 
 function mergePlain(left, right) {
   return { ...(isPlainObject(left) ? left : {}), ...right };
+}
+
+function cloneJson(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 function shellEscapeEnv(value) {

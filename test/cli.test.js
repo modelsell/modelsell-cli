@@ -34,7 +34,7 @@ test('prints Chinese help for Chinese locales', async () => {
     console.log = originalLog;
   }
   assert.match(lines.join('\n'), /用法:/);
-  assert.match(lines.join('\n'), /配置 Codex、Claude Code 和 Gemini CLI/);
+  assert.match(lines.join('\n'), /配置 Codex、Claude Code、Gemini CLI 和 OpenClaw/);
 });
 
 test('configures selected target in non-interactive mode', async () => {
@@ -54,6 +54,40 @@ test('configures selected target in non-interactive mode', async () => {
   const env = await readFile(path.join(home, '.gemini', '.env'), 'utf8');
   assert.match(env, /^GEMINI_API_KEY=sk-test$/m);
   assert.match(env, /^GEMINI_MODEL=gemini-test$/m);
+});
+
+test('configures OpenClaw target in non-interactive mode', async () => {
+  const home = await tempHome();
+  const originalLog = console.log;
+  console.log = () => {};
+  try {
+    const code = await run(
+      ['configure', '--target', 'openclaw', '--api-key', 'sk-test', '--yes'],
+      { HOME: home }
+    );
+    assert.equal(code, 0);
+  } finally {
+    console.log = originalLog;
+  }
+
+  const config = JSON.parse(await readFile(path.join(home, '.openclaw', 'openclaw.json'), 'utf8'));
+  const env = await readFile(path.join(home, '.openclaw', '.env'), 'utf8');
+  assert.equal(config.agents.defaults.model.primary, 'modelsell/gpt-5.5');
+  assert.equal(config.models.providers.modelsell.apiKey, '${OPENAI_API_KEY}');
+  assert.equal(config.models.providers['modelsell-anthropic'].apiKey, '${ANTHROPIC_API_KEY}');
+  assert.deepEqual(
+    config.agents.defaults.model.fallbacks,
+    [
+      'modelsell/kimi-k2.5',
+      'modelsell/qwen3.6-plus',
+      'modelsell/gemini-3.1-pro-preview',
+      'modelsell/glm-5.1',
+      'modelsell-anthropic/claude-sonnet-4-6',
+      'modelsell-anthropic/claude-opus-4-6'
+    ]
+  );
+  assert.match(env, /^OPENAI_API_KEY=sk-test$/m);
+  assert.match(env, /^ANTHROPIC_API_KEY=sk-test$/m);
 });
 
 test('interactive mode shows banner and lets user choose a target by number', async () => {
@@ -100,7 +134,7 @@ test('interactive mode uses Chinese descriptions and prompts for Chinese locales
   });
 
   assert.equal(code, 0);
-  assert.match(output.join('\n'), /配置 Codex、Claude Code 和 Gemini CLI/);
+  assert.match(output.join('\n'), /配置 Codex、Claude Code、Gemini CLI 和 OpenClaw/);
   assert.match(output.join('\n'), /请选择要配置的工具/);
   assert.deepEqual(prompts, [
     '请选择 [1]: ',
@@ -114,7 +148,30 @@ test('renders colorful ModelSell CLI banner', () => {
   const banner = renderBanner({ color: true });
   assert.match(banner, /\u001b\[/);
   assert.match(banner, /ModelSell CLI/);
-  assert.match(banner, /Configure Codex, Claude Code, and Gemini CLI/);
+  assert.match(banner, /Configure Codex, Claude Code, Gemini CLI, and OpenClaw/);
+});
+
+test('interactive OpenClaw configuration does not prompt for a single model', async () => {
+  const home = await tempHome();
+  const prompts = [];
+  const output = [];
+  const answers = ['5', '', 'sk-openclaw'];
+
+  const code = await run(['configure'], { HOME: home, NO_COLOR: '1' }, {
+    log: (line = '') => output.push(String(line)),
+    question: async (prompt) => {
+      prompts.push(prompt);
+      return answers.shift() ?? '';
+    }
+  });
+
+  assert.equal(code, 0);
+  assert.deepEqual(prompts, [
+    'Choose [1]: ',
+    'Base URL [https://www.modelsell.com]: ',
+    'API key: '
+  ]);
+  assert.match(output.join('\n'), /OpenClaw/);
 });
 
 test('renders Gemini-like numbered target menu', () => {
@@ -123,4 +180,5 @@ test('renders Gemini-like numbered target menu', () => {
   assert.match(menu, /2\. Codex/);
   assert.match(menu, /3\. Claude Code/);
   assert.match(menu, /4\. Gemini CLI/);
+  assert.match(menu, /5\. OpenClaw/);
 });

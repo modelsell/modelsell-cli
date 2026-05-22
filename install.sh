@@ -4,6 +4,7 @@ set -eu
 VERSION="${MODELSELL_VERSION:-latest}"
 BIN_DIR="${MODELSELL_BIN_DIR:-$HOME/.local/bin}"
 BASE_URL="${MODELSELL_DOWNLOAD_BASE_URL:-https://static.modelsell.com/modelsell-cli}"
+CACHE_BUST="${MODELSELL_CACHE_BUST:-202605221720}"
 
 detect_platform() {
   os="$(uname -s)"
@@ -30,6 +31,8 @@ url="$BASE_URL/$asset"
 
 if [ "$VERSION" != "latest" ]; then
   url="$BASE_URL/$VERSION/$asset"
+elif [ -n "$CACHE_BUST" ]; then
+  url="$url?v=$CACHE_BUST"
 fi
 
 mkdir -p "$BIN_DIR"

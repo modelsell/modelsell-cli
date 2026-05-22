@@ -6,7 +6,7 @@ const TRANSLATIONS = {
   en: {
     usage: 'Usage:',
     options: 'Options:',
-    targetOption: '--target <list>       codex,claude,gemini or all (default: all)',
+    targetOption: '--target <list>       codex,claude,gemini,openclaw or all (default: all)',
     baseUrlOption: `--base-url <url>      API base URL (default: ${DEFAULT_BASE_URL})`,
     apiKeyOption: '--api-key <key>       API key. If omitted, you will be prompted.',
     modelOption: '--model <model>       Use one model for all selected CLIs',
@@ -15,19 +15,20 @@ const TRANSLATIONS = {
     geminiModelOption: '--gemini-model <name> Model for Gemini CLI',
     yesOption: '--yes                Accept defaults for omitted base URL and models',
     helpOption: '-h, --help           Show this help',
-    subtitle: 'Configure Codex, Claude Code, and Gemini CLI',
+    subtitle: 'Configure Codex, Claude Code, Gemini CLI, and OpenClaw',
     selectTargets: 'Select what you want to configure:',
     allLabel: 'All',
-    allDetail: 'Configure Codex, Claude Code, and Gemini CLI',
+    allDetail: 'Configure Codex, Claude Code, Gemini CLI, and OpenClaw',
     codexDetail: 'OpenAI Codex CLI',
     claudeDetail: 'Anthropic Claude Code',
     geminiDetail: 'Google Gemini CLI',
+    openclawDetail: 'OpenClaw',
     choosePrompt: 'Choose',
     baseUrlPrompt: 'Base URL',
     apiKeyPrompt: 'API key',
     modelSuffix: 'model',
     updated: 'ModelSell configuration updated:',
-    chooseInvalid: 'Please choose 1-4, or type codex, claude, gemini, or all.',
+    chooseInvalid: 'Please choose 1-5, or type codex, claude, gemini, openclaw, or all.',
     missingValue: 'Missing value for',
     unexpectedArgument: 'Unexpected argument',
     unknownCommand: 'Unknown command',
@@ -38,7 +39,7 @@ const TRANSLATIONS = {
   zh: {
     usage: '用法:',
     options: '选项:',
-    targetOption: '--target <list>       codex、claude、gemini 或 all（默认: all）',
+    targetOption: '--target <list>       codex、claude、gemini、openclaw 或 all（默认: all）',
     baseUrlOption: `--base-url <url>      API 基础 URL（默认: ${DEFAULT_BASE_URL}）`,
     apiKeyOption: '--api-key <key>       API 密钥。未提供时会提示输入。',
     modelOption: '--model <model>       为所有选中的 CLI 使用同一个模型',
@@ -47,19 +48,20 @@ const TRANSLATIONS = {
     geminiModelOption: '--gemini-model <name> Gemini CLI 使用的模型',
     yesOption: '--yes                对未提供的基础 URL 和模型使用默认值',
     helpOption: '-h, --help           显示帮助',
-    subtitle: '配置 Codex、Claude Code 和 Gemini CLI',
+    subtitle: '配置 Codex、Claude Code、Gemini CLI 和 OpenClaw',
     selectTargets: '请选择要配置的工具:',
     allLabel: '全部',
-    allDetail: '配置 Codex、Claude Code 和 Gemini CLI',
+    allDetail: '配置 Codex、Claude Code、Gemini CLI 和 OpenClaw',
     codexDetail: 'OpenAI Codex CLI',
     claudeDetail: 'Anthropic Claude Code',
     geminiDetail: 'Google Gemini CLI',
+    openclawDetail: 'OpenClaw',
     choosePrompt: '请选择',
     baseUrlPrompt: '基础 URL',
     apiKeyPrompt: 'API 密钥',
     modelSuffix: '模型',
     updated: 'ModelSell 配置已更新:',
-    chooseInvalid: '请选择 1-4，或输入 codex、claude、gemini、all。',
+    chooseInvalid: '请选择 1-5，或输入 codex、claude、gemini、openclaw、all。',
     missingValue: '缺少参数值',
     unexpectedArgument: '不支持的参数',
     unknownCommand: '未知命令',
@@ -126,6 +128,7 @@ export async function run(argv = process.argv.slice(2), env = process.env, io = 
     const models = {};
 
     for (const target of targets) {
+      if (target === 'openclaw') continue;
       const flagName = `${target}Model`;
       const defaultModel = flags.model || flags[flagName] || getDefaultModel(target);
       models[target] = flags[flagName] || flags.model || (question && !flags.yes
@@ -257,7 +260,8 @@ function targetChoices(t) {
     { key: 'all', label: t.allLabel, detail: t.allDetail },
     { key: 'codex', label: 'Codex', detail: t.codexDetail },
     { key: 'claude', label: 'Claude Code', detail: t.claudeDetail },
-    { key: 'gemini', label: 'Gemini CLI', detail: t.geminiDetail }
+    { key: 'gemini', label: 'Gemini CLI', detail: t.geminiDetail },
+    { key: 'openclaw', label: 'OpenClaw', detail: t.openclawDetail }
   ];
 }
 
@@ -283,7 +287,8 @@ function displayName(target) {
   return {
     codex: 'Codex',
     claude: 'Claude Code',
-    gemini: 'Gemini CLI'
+    gemini: 'Gemini CLI',
+    openclaw: 'OpenClaw'
   }[target];
 }
 

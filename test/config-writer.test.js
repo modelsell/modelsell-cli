@@ -100,3 +100,90 @@ test('writes Gemini settings and env file', async () => {
   assert.match(env, /^GEMINI_MODEL=gemini-3.1-pro-preview$/m);
   assert.match(env, /^GOOGLE_GEMINI_BASE_URL=https:\/\/www\.modelsell\.com$/m);
 });
+
+test('writes OpenClaw providers, model routing, and env file while preserving existing config', async () => {
+  const home = await tempHome();
+  const openclawDir = path.join(home, '.openclaw');
+  await mkdir(openclawDir, { recursive: true });
+  await writeFile(
+    path.join(openclawDir, 'openclaw.json'),
+    JSON.stringify({
+      gateway: { mode: 'local' },
+      agents: {
+        defaults: {
+          workspace: '/tmp/workspace',
+          model: {
+            primary: 'openai/gpt-4.1',
+            fallbacks: ['openai/gpt-4.1-mini']
+          },
+          models: {
+            'openai/gpt-4.1': { alias: 'GPT 4.1' }
+          }
+        }
+      },
+      models: {
+        providers: {
+          openai: {
+            api: 'openai-responses',
+            baseUrl: 'https://api.openai.com/v1',
+            apiKey: 'sk-old',
+            models: [{ id: 'gpt-4.1', name: 'GPT 4.1' }]
+          }
+        }
+      }
+    }, null, 2),
+    'utf8'
+  );
+
+  await applyConfiguration({
+    homeDir: home,
+    targets: ['openclaw'],
+    apiKey: 'sk-openclaw',
+    baseUrl: 'https://www.modelsell.com',
+    model: 'gpt-5.5'
+  });
+
+  const config = JSON.parse(await readFile(path.join(openclawDir, 'openclaw.json'), 'utf8'));
+  const env = await readFile(path.join(openclawDir, '.env'), 'utf8');
+  assert.equal(config.gateway.mode, 'local');
+  assert.equal(config.agents.defaults.workspace, '/tmp/workspace');
+  assert.equal(config.agents.defaults.model.primary, 'modelsell/gpt-5.5');
+  assert.deepEqual(config.agents.defaults.model.fallbacks, [
+    'modelsell/kimi-k2.5',
+    'modelsell/qwen3.6-plus',
+    'modelsell/gemini-3.1-pro-preview',
+    'modelsell/glm-5.1',
+    'modelsell-anthropic/claude-sonnet-4-6',
+    'modelsell-anthropic/claude-opus-4-6'
+  ]);
+  assert.deepEqual(config.agents.defaults.models['openai/gpt-4.1'], { alias: 'GPT 4.1' });
+  assert.deepEqual(config.agents.defaults.models['modelsell/gpt-5.5'], { alias: 'GPT-5.5' });
+  assert.deepEqual(config.agents.defaults.models['modelsell-anthropic/claude-opus-4-6'], { alias: 'Claude Opus 4.6' });
+  assert.equal(config.models.providers.openai.apiKey, 'sk-old');
+  assert.deepEqual(config.models.providers.modelsell, {
+    api: 'openai-responses',
+    baseUrl: '${OPENAI_BASE_URL}',
+    apiKey: '${OPENAI_API_KEY}',
+    models: [
+      { id: 'gpt-5.5', name: 'GPT-5.5', contextWindow: 400000, maxTokens: 128000 },
+      { id: 'kimi-k2.5', name: 'Kimi K2.5', contextWindow: 400000, maxTokens: 128000 },
+      { id: 'MiniMax/MiniMax-M2.7', name: 'MiniMax M2.7', contextWindow: 400000, maxTokens: 128000 },
+      { id: 'qwen3.6-plus', name: 'Qwen 3.6 Plus', contextWindow: 400000, maxTokens: 128000 },
+      { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro Preview', contextWindow: 400000, maxTokens: 128000 },
+      { id: 'glm-5.1', name: 'GLM-5.1', contextWindow: 400000, maxTokens: 128000 }
+    ]
+  });
+  assert.deepEqual(config.models.providers['modelsell-anthropic'], {
+    api: 'anthropic-messages',
+    baseUrl: '${ANTHROPIC_BASE_URL}',
+    apiKey: '${ANTHROPIC_API_KEY}',
+    models: [
+      { id: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6', contextWindow: 200000, maxTokens: 128000 },
+      { id: 'claude-opus-4-6', name: 'Claude Opus 4.6', contextWindow: 200000, maxTokens: 128000 }
+    ]
+  });
+  assert.match(env, /^OPENAI_BASE_URL=https:\/\/www\.modelsell\.com\/v1$/m);
+  assert.match(env, /^OPENAI_API_KEY=sk-openclaw$/m);
+  assert.match(env, /^ANTHROPIC_BASE_URL=https:\/\/www\.modelsell\.com$/m);
+  assert.match(env, /^ANTHROPIC_API_KEY=sk-openclaw$/m);
+});
