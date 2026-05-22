@@ -22,13 +22,13 @@ After downloading on macOS:
 
 ```sh
 chmod +x modelsell-darwin-arm64
-./modelsell-darwin-arm64 configure
+./modelsell-darwin-arm64
 ```
 
 After downloading on Windows PowerShell:
 
 ```powershell
-.\modelsell-win-x64.exe configure
+.\modelsell-win-x64.exe
 ```
 
 For local development from this directory:
@@ -49,7 +49,7 @@ npm run build
 Interactive mode:
 
 ```sh
-modelsell configure
+modelsell
 ```
 
 Interactive mode opens with a colorful `ModelSell CLI` banner and a numbered

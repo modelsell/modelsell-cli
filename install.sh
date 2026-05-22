@@ -51,7 +51,7 @@ mv "$tmp_file" "$BIN_DIR/modelsell"
 trap - EXIT
 
 echo "ModelSell CLI installed at $BIN_DIR/modelsell"
-echo "Run: modelsell configure"
+echo "Run: modelsell"
 case ":$PATH:" in
   *":$BIN_DIR:"*) ;;
   *) echo "Add $BIN_DIR to PATH if the modelsell command is not found." ;;
