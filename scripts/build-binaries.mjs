@@ -5,6 +5,8 @@ import { execFile } from 'node:child_process';
 const targets = [
   { pkg: 'node20-macos-arm64', output: 'modelsell-darwin-arm64' },
   { pkg: 'node20-macos-x64', output: 'modelsell-darwin-x64' },
+  { pkg: 'node20-linux-arm64', output: 'modelsell-linux-arm64' },
+  { pkg: 'node20-linux-x64', output: 'modelsell-linux-x64' },
   { pkg: 'node20-win-x64', output: 'modelsell-win-x64.exe' }
 ];
 

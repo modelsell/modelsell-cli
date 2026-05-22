@@ -3,7 +3,7 @@ set -eu
 
 VERSION="${MODELSELL_VERSION:-latest}"
 BIN_DIR="${MODELSELL_BIN_DIR:-$HOME/.local/bin}"
-REPO="${MODELSELL_REPO:-modelsell/modelsell-cli}"
+BASE_URL="${MODELSELL_DOWNLOAD_BASE_URL:-https://static.modelsell.com/modelsell-cli}"
 
 detect_platform() {
   os="$(uname -s)"
@@ -26,10 +26,10 @@ detect_platform() {
 
 platform="$(detect_platform)"
 asset="modelsell-$platform"
-url="https://github.com/$REPO/releases/latest/download/$asset"
+url="$BASE_URL/$asset"
 
 if [ "$VERSION" != "latest" ]; then
-  url="https://github.com/$REPO/releases/download/$VERSION/$asset"
+  url="$BASE_URL/$VERSION/$asset"
 fi
 
 mkdir -p "$BIN_DIR"

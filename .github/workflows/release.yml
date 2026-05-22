@@ -27,4 +27,6 @@ jobs:
           files: |
             dist/modelsell-darwin-arm64
             dist/modelsell-darwin-x64
+            dist/modelsell-linux-arm64
+            dist/modelsell-linux-x64
             dist/modelsell-win-x64.exe

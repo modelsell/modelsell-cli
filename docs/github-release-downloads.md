@@ -6,12 +6,16 @@ The first GitHub release should be tagged as `v0.1.0`.
 
 - macOS Apple Silicon: https://github.com/modelsell/modelsell-cli/releases/latest/download/modelsell-darwin-arm64
 - macOS Intel: https://github.com/modelsell/modelsell-cli/releases/latest/download/modelsell-darwin-x64
+- Linux ARM64: https://github.com/modelsell/modelsell-cli/releases/latest/download/modelsell-linux-arm64
+- Linux x64: https://github.com/modelsell/modelsell-cli/releases/latest/download/modelsell-linux-x64
 - Windows x64: https://github.com/modelsell/modelsell-cli/releases/latest/download/modelsell-win-x64.exe
 
 ## Versioned URLs
 
 - macOS Apple Silicon: https://github.com/modelsell/modelsell-cli/releases/download/v0.1.0/modelsell-darwin-arm64
 - macOS Intel: https://github.com/modelsell/modelsell-cli/releases/download/v0.1.0/modelsell-darwin-x64
+- Linux ARM64: https://github.com/modelsell/modelsell-cli/releases/download/v0.1.0/modelsell-linux-arm64
+- Linux x64: https://github.com/modelsell/modelsell-cli/releases/download/v0.1.0/modelsell-linux-x64
 - Windows x64: https://github.com/modelsell/modelsell-cli/releases/download/v0.1.0/modelsell-win-x64.exe
 
 ## Release Command
@@ -24,4 +28,4 @@ git push origin main
 git push origin v0.1.0
 ```
 
-The release workflow uploads the three binaries to GitHub Releases.
+The release workflow uploads the macOS, Linux, and Windows binaries to GitHub Releases.
