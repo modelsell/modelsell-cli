@@ -29,3 +29,10 @@ git push origin v0.1.0
 ```
 
 The release workflow uploads the macOS, Linux, and Windows binaries to GitHub Releases.
+
+## Installer Script URLs
+
+- macOS/Linux GitHub: https://raw.githubusercontent.com/modelsell/modelsell-cli/main/install.sh
+- macOS/Linux fallback: https://static.modelsell.com/modelsell-cli/install.sh
+- Windows GitHub: https://raw.githubusercontent.com/modelsell/modelsell-cli/main/install.ps1
+- Windows fallback: https://static.modelsell.com/modelsell-cli/install.ps1

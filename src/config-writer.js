@@ -78,9 +78,14 @@ function normalizeOptions(options) {
     throw new Error('API key is required.');
   }
 
+  const homeDir = options.homeDir ?? resolveHomeDir(process.env);
+  if (!homeDir) {
+    throw new Error('Home directory could not be detected. Set HOME, USERPROFILE, or HOMEDRIVE/HOMEPATH.');
+  }
+
   const targets = options.targets?.length ? options.targets : DEFAULT_TARGETS;
   return {
-    homeDir: options.homeDir ?? process.env.HOME,
+    homeDir,
     targets,
     apiKey: options.apiKey.trim(),
     baseUrl: stripTrailingSlash(options.baseUrl || DEFAULT_BASE_URL),
@@ -212,7 +217,7 @@ function pickModel(options, target) {
 
 async function readToml(filePath) {
   try {
-    const text = await readFile(filePath, 'utf8');
+    const text = stripUtf8Bom(await readFile(filePath, 'utf8'));
     return text.trim() ? TOML.parse(text) : {};
   } catch (error) {
     if (error.code === 'ENOENT') return {};
@@ -222,7 +227,7 @@ async function readToml(filePath) {
 
 async function readJson(filePath) {
   try {
-    const text = await readFile(filePath, 'utf8');
+    const text = stripUtf8Bom(await readFile(filePath, 'utf8'));
     return text.trim() ? JSON.parse(text) : {};
   } catch (error) {
     if (error.code === 'ENOENT') return {};
@@ -244,7 +249,7 @@ async function writeEnvironmentFile(filePath, values) {
 
 async function readEnv(filePath) {
   try {
-    const text = await readFile(filePath, 'utf8');
+    const text = stripUtf8Bom(await readFile(filePath, 'utf8'));
     const values = {};
     for (const line of text.split(/\r?\n/)) {
       const trimmed = line.trim();
@@ -279,6 +284,10 @@ function stripTrailingSlash(value) {
   return value.replace(/\/+$/, '');
 }
 
+function stripUtf8Bom(value) {
+  return value.charCodeAt(0) === 0xFEFF ? value.slice(1) : value;
+}
+
 function ensureV1Url(value) {
   const stripped = stripTrailingSlash(value);
   return stripped.endsWith('/v1') ? stripped : `${stripped}/v1`;
@@ -294,6 +303,13 @@ function mergePlain(left, right) {
 
 function cloneJson(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function resolveHomeDir(env) {
+  if (env.HOME) return env.HOME;
+  if (env.USERPROFILE) return env.USERPROFILE;
+  if (env.HOMEDRIVE && env.HOMEPATH !== undefined) return `${env.HOMEDRIVE}${env.HOMEPATH}`;
+  return undefined;
 }
 
 function shellEscapeEnv(value) {

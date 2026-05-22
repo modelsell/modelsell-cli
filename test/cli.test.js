@@ -90,6 +90,63 @@ test('configures OpenClaw target in non-interactive mode', async () => {
   assert.match(env, /^ANTHROPIC_API_KEY=sk-test$/m);
 });
 
+test('uses USERPROFILE as home directory when HOME is not set', async () => {
+  const home = await tempHome();
+  const originalLog = console.log;
+  const originalHome = process.env.HOME;
+  console.log = () => {};
+  try {
+    delete process.env.HOME;
+    const code = await run(
+      ['configure', '--target', 'codex', '--api-key', 'sk-test', '--yes'],
+      { USERPROFILE: home }
+    );
+    assert.equal(code, 0);
+  } finally {
+    if (originalHome === undefined) {
+      delete process.env.HOME;
+    } else {
+      process.env.HOME = originalHome;
+    }
+    console.log = originalLog;
+  }
+
+  const auth = JSON.parse(await readFile(path.join(home, '.codex', 'auth.json'), 'utf8'));
+  assert.equal(auth.OPENAI_API_KEY, 'sk-test');
+});
+
+test('uses HOMEDRIVE and HOMEPATH as home directory when HOME and USERPROFILE are not set', async () => {
+  const home = await tempHome();
+  const originalLog = console.log;
+  const originalHome = process.env.HOME;
+  const originalUserProfile = process.env.USERPROFILE;
+  console.log = () => {};
+  try {
+    delete process.env.HOME;
+    delete process.env.USERPROFILE;
+    const code = await run(
+      ['configure', '--target', 'claude', '--api-key', 'sk-test', '--yes'],
+      { HOMEDRIVE: home, HOMEPATH: '' }
+    );
+    assert.equal(code, 0);
+  } finally {
+    if (originalHome === undefined) {
+      delete process.env.HOME;
+    } else {
+      process.env.HOME = originalHome;
+    }
+    if (originalUserProfile === undefined) {
+      delete process.env.USERPROFILE;
+    } else {
+      process.env.USERPROFILE = originalUserProfile;
+    }
+    console.log = originalLog;
+  }
+
+  const settings = JSON.parse(await readFile(path.join(home, '.claude', 'settings.json'), 'utf8'));
+  assert.equal(settings.env.ANTHROPIC_AUTH_TOKEN, 'sk-test');
+});
+
 test('interactive mode shows banner and lets user choose a target by number', async () => {
   const home = await tempHome();
   const prompts = [];

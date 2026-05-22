@@ -43,13 +43,31 @@ curl -fsSL https://raw.githubusercontent.com/modelsell/modelsell-cli/main/instal
 curl -fsSL https://static.modelsell.com/modelsell-cli/install.sh | sh
 ```
 
-安装脚本默认会把 `modelsell` 安装到：
+Windows PowerShell 可以使用安装脚本：
+
+```powershell
+powershell -ExecutionPolicy Bypass -c "irm https://raw.githubusercontent.com/modelsell/modelsell-cli/main/install.ps1 | iex"
+```
+
+如果无法访问 GitHub，可以使用备用安装地址：
+
+```powershell
+powershell -ExecutionPolicy Bypass -c "irm https://static.modelsell.com/modelsell-cli/install.ps1 | iex"
+```
+
+macOS/Linux 安装脚本默认会把 `modelsell` 安装到：
 
 ```text
 ~/.local/bin/modelsell
 ```
 
-如果安装后系统找不到 `modelsell` 命令，请把 `~/.local/bin` 加入 `PATH`。
+Windows 安装脚本默认会把 `modelsell.exe` 安装到：
+
+```text
+%USERPROFILE%\.local\bin\modelsell.exe
+```
+
+如果安装后系统找不到 `modelsell` 命令，请重新打开 PowerShell，或确认安装目录已加入 `PATH`。
 
 ### 手动下载
 
@@ -155,14 +173,32 @@ If GitHub is not accessible, use the fallback installer:
 curl -fsSL https://static.modelsell.com/modelsell-cli/install.sh | sh
 ```
 
-The installer writes the binary to:
+On Windows PowerShell, install with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -c "irm https://raw.githubusercontent.com/modelsell/modelsell-cli/main/install.ps1 | iex"
+```
+
+If GitHub is not accessible, use the fallback installer:
+
+```powershell
+powershell -ExecutionPolicy Bypass -c "irm https://static.modelsell.com/modelsell-cli/install.ps1 | iex"
+```
+
+The macOS/Linux installer writes the binary to:
 
 ```text
 ~/.local/bin/modelsell
 ```
 
-If `modelsell` is not found after installation, add `~/.local/bin` to your
-`PATH`.
+The Windows installer writes the binary to:
+
+```text
+%USERPROFILE%\.local\bin\modelsell.exe
+```
+
+If `modelsell` is not found after installation, reopen PowerShell or confirm the
+install directory is in your `PATH`.
 
 ### Manual Download
 

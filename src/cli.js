@@ -137,7 +137,7 @@ export async function run(argv = process.argv.slice(2), env = process.env, io = 
     }
 
     const results = await applyConfiguration({
-      homeDir: env.HOME,
+      homeDir: resolveHomeDir(env),
       targets,
       apiKey,
       baseUrl,
@@ -294,6 +294,13 @@ function displayName(target) {
 
 function supportsColor(env) {
   return env.NO_COLOR !== '1' && env.TERM !== 'dumb';
+}
+
+function resolveHomeDir(env) {
+  if (env.HOME) return env.HOME;
+  if (env.USERPROFILE) return env.USERPROFILE;
+  if (env.HOMEDRIVE && env.HOMEPATH !== undefined) return `${env.HOMEDRIVE}${env.HOMEPATH}`;
+  return undefined;
 }
 
 function makePainter(enabled) {

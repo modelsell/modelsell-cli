@@ -187,3 +187,26 @@ test('writes OpenClaw providers, model routing, and env file while preserving ex
   assert.match(env, /^ANTHROPIC_BASE_URL=https:\/\/www\.modelsell\.com$/m);
   assert.match(env, /^ANTHROPIC_API_KEY=sk-openclaw$/m);
 });
+
+test('reads existing OpenClaw JSON config with UTF-8 BOM', async () => {
+  const home = await tempHome();
+  const openclawDir = path.join(home, '.openclaw');
+  await mkdir(openclawDir, { recursive: true });
+  await writeFile(
+    path.join(openclawDir, 'openclaw.json'),
+    `\uFEFF${JSON.stringify({ gateway: { mode: 'local' } }, null, 2)}`,
+    'utf8'
+  );
+
+  await applyConfiguration({
+    homeDir: home,
+    targets: ['openclaw'],
+    apiKey: 'sk-openclaw',
+    baseUrl: 'https://www.modelsell.com',
+    model: 'gpt-5.5'
+  });
+
+  const config = JSON.parse(await readFile(path.join(openclawDir, 'openclaw.json'), 'utf8'));
+  assert.equal(config.gateway.mode, 'local');
+  assert.equal(config.agents.defaults.model.primary, 'modelsell/gpt-5.5');
+});
