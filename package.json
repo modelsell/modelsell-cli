@@ -1,0 +1,18 @@
+{
+  "name": "modelsell-cli",
+  "version": "0.1.0",
+  "description": "Configure Codex, Claude Code, and Gemini CLI to use ModelSell.",
+  "type": "module",
+  "bin": {
+    "modelsell": "./bin/modelsell.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@iarna/toml": "^2.2.5"
+  }
+}
