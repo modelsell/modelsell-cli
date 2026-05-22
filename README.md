@@ -6,16 +6,29 @@ Default base URL: `https://www.modelsell.com`
 
 ## Install
 
-After this repository is pushed to GitHub:
+macOS one-line install from GitHub Releases:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/modelsell/modelsell-cli/main/install.sh | sh
 ```
 
-Install from another Git URL:
+GitHub download links:
+
+- macOS Apple Silicon: https://github.com/modelsell/modelsell-cli/releases/latest/download/modelsell-darwin-arm64
+- macOS Intel: https://github.com/modelsell/modelsell-cli/releases/latest/download/modelsell-darwin-x64
+- Windows x64: https://github.com/modelsell/modelsell-cli/releases/latest/download/modelsell-win-x64.exe
+
+After downloading on macOS:
 
 ```sh
-MODELSELL_CLI_REPO=https://github.com/your-org/modelsell-cli.git sh install.sh
+chmod +x modelsell-darwin-arm64
+./modelsell-darwin-arm64 configure
+```
+
+After downloading on Windows PowerShell:
+
+```powershell
+.\modelsell-win-x64.exe configure
 ```
 
 For local development from this directory:
@@ -25,10 +38,10 @@ npm install
 npm link
 ```
 
-Install from this local directory without publishing first:
+Build release binaries locally:
 
 ```sh
-MODELSELL_CLI_REPO=$PWD sh install.sh
+npm run build
 ```
 
 ## Configure

@@ -7,6 +7,7 @@
     "modelsell": "./bin/modelsell.js"
   },
   "scripts": {
+    "build": "node scripts/build-binaries.mjs",
     "test": "node --test"
   },
   "engines": {
@@ -14,5 +15,9 @@
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.19.0",
+    "esbuild": "^0.28.0"
   }
 }
