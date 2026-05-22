@@ -2,44 +2,109 @@ import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { applyConfiguration, DEFAULT_BASE_URL, DEFAULT_TARGETS, getDefaultModel } from './config-writer.js';
 
-const HELP = `
-ModelSell CLI
+const TRANSLATIONS = {
+  en: {
+    usage: 'Usage:',
+    options: 'Options:',
+    targetOption: '--target <list>       codex,claude,gemini or all (default: all)',
+    baseUrlOption: `--base-url <url>      API base URL (default: ${DEFAULT_BASE_URL})`,
+    apiKeyOption: '--api-key <key>       API key. If omitted, you will be prompted.',
+    modelOption: '--model <model>       Use one model for all selected CLIs',
+    codexModelOption: '--codex-model <name>  Model for Codex',
+    claudeModelOption: '--claude-model <name> Model for Claude Code',
+    geminiModelOption: '--gemini-model <name> Model for Gemini CLI',
+    yesOption: '--yes                Accept defaults for omitted base URL and models',
+    helpOption: '-h, --help           Show this help',
+    subtitle: 'Configure Codex, Claude Code, and Gemini CLI',
+    selectTargets: 'Select what you want to configure:',
+    allLabel: 'All',
+    allDetail: 'Configure Codex, Claude Code, and Gemini CLI',
+    codexDetail: 'OpenAI Codex CLI',
+    claudeDetail: 'Anthropic Claude Code',
+    geminiDetail: 'Google Gemini CLI',
+    choosePrompt: 'Choose',
+    baseUrlPrompt: 'Base URL',
+    apiKeyPrompt: 'API key',
+    modelSuffix: 'model',
+    updated: 'ModelSell configuration updated:',
+    chooseInvalid: 'Please choose 1-4, or type codex, claude, gemini, or all.',
+    missingValue: 'Missing value for',
+    unexpectedArgument: 'Unexpected argument',
+    unknownCommand: 'Unknown command',
+    unsupportedTarget: 'Unsupported target',
+    requiredSuffix: 'is required. Pass --api-key or set MODELSELL_API_KEY.',
+    cannotBeEmptySuffix: 'cannot be empty.'
+  },
+  zh: {
+    usage: '用法:',
+    options: '选项:',
+    targetOption: '--target <list>       codex、claude、gemini 或 all（默认: all）',
+    baseUrlOption: `--base-url <url>      API 基础 URL（默认: ${DEFAULT_BASE_URL}）`,
+    apiKeyOption: '--api-key <key>       API 密钥。未提供时会提示输入。',
+    modelOption: '--model <model>       为所有选中的 CLI 使用同一个模型',
+    codexModelOption: '--codex-model <name>  Codex 使用的模型',
+    claudeModelOption: '--claude-model <name> Claude Code 使用的模型',
+    geminiModelOption: '--gemini-model <name> Gemini CLI 使用的模型',
+    yesOption: '--yes                对未提供的基础 URL 和模型使用默认值',
+    helpOption: '-h, --help           显示帮助',
+    subtitle: '配置 Codex、Claude Code 和 Gemini CLI',
+    selectTargets: '请选择要配置的工具:',
+    allLabel: '全部',
+    allDetail: '配置 Codex、Claude Code 和 Gemini CLI',
+    codexDetail: 'OpenAI Codex CLI',
+    claudeDetail: 'Anthropic Claude Code',
+    geminiDetail: 'Google Gemini CLI',
+    choosePrompt: '请选择',
+    baseUrlPrompt: '基础 URL',
+    apiKeyPrompt: 'API 密钥',
+    modelSuffix: '模型',
+    updated: 'ModelSell 配置已更新:',
+    chooseInvalid: '请选择 1-4，或输入 codex、claude、gemini、all。',
+    missingValue: '缺少参数值',
+    unexpectedArgument: '不支持的参数',
+    unknownCommand: '未知命令',
+    unsupportedTarget: '不支持的目标',
+    requiredSuffix: '为必填项。请传入 --api-key 或设置 MODELSELL_API_KEY。',
+    cannotBeEmptySuffix: '不能为空。'
+  }
+};
 
-Usage:
+function helpText(t) {
+  return `
+ModelSell CLI
+${t.subtitle}
+
+${t.usage}
   modelsell configure [options]
   modelsell config [options]
 
-Options:
-  --target <list>       codex,claude,gemini or all (default: all)
-  --base-url <url>      API base URL (default: ${DEFAULT_BASE_URL})
-  --api-key <key>       API key. If omitted, you will be prompted.
-  --model <model>       Use one model for all selected CLIs
-  --codex-model <name>  Model for Codex
-  --claude-model <name> Model for Claude Code
-  --gemini-model <name> Model for Gemini CLI
-  --yes                Accept defaults for omitted base URL and models
-  -h, --help           Show this help
+${t.options}
+  ${t.targetOption}
+  ${t.baseUrlOption}
+  ${t.apiKeyOption}
+  ${t.modelOption}
+  ${t.codexModelOption}
+  ${t.claudeModelOption}
+  ${t.geminiModelOption}
+  ${t.yesOption}
+  ${t.helpOption}
 `.trim();
-
-const TARGET_CHOICES = [
-  { key: 'all', label: 'All', detail: 'Configure Codex, Claude Code, and Gemini CLI' },
-  { key: 'codex', label: 'Codex', detail: 'OpenAI Codex CLI' },
-  { key: 'claude', label: 'Claude Code', detail: 'Anthropic Claude Code' },
-  { key: 'gemini', label: 'Gemini CLI', detail: 'Google Gemini CLI' }
-];
+}
 
 export async function run(argv = process.argv.slice(2), env = process.env, io = {}) {
+  const t = getTranslations(env);
   const command = argv[0] && !argv[0].startsWith('-') ? argv[0] : 'configure';
   const args = argv[0] && !argv[0].startsWith('-') ? argv.slice(1) : argv;
-  const flags = parseArgs(args);
+  const flags = parseArgs(args, t);
+  const help = helpText(t);
 
   if (flags.help || command === 'help') {
-    writeLine(io, HELP);
+    writeLine(io, help);
     return 0;
   }
 
   if (command !== 'configure' && command !== 'config') {
-    throw new Error(`Unknown command: ${command}\n\n${HELP}`);
+    throw new Error(`${t.unknownCommand}: ${command}\n\n${help}`);
   }
 
   const interactive = !flags.yes || !flags.apiKey;
@@ -48,23 +113,23 @@ export async function run(argv = process.argv.slice(2), env = process.env, io = 
 
   try {
     if (question) {
-      writeLine(io, renderBanner({ color: supportsColor(env) }));
+      writeLine(io, renderBanner({ color: supportsColor(env), t }));
     }
 
     const targets = flags.target
-      ? parseTargets(flags.target)
-      : await chooseTargets(question, io);
+      ? parseTargets(flags.target, t)
+      : await chooseTargets(question, io, t);
     const baseUrl = flags.baseUrl || (question && !flags.yes
-      ? await askWithDefault(question, 'Base URL', DEFAULT_BASE_URL)
+      ? await askWithDefault(question, t.baseUrlPrompt, DEFAULT_BASE_URL)
       : DEFAULT_BASE_URL);
-    const apiKey = flags.apiKey || env.MODELSELL_API_KEY || await askRequired(question, io, 'API key');
+    const apiKey = flags.apiKey || env.MODELSELL_API_KEY || await askRequired(question, io, t.apiKeyPrompt, t);
     const models = {};
 
     for (const target of targets) {
       const flagName = `${target}Model`;
       const defaultModel = flags.model || flags[flagName] || getDefaultModel(target);
       models[target] = flags[flagName] || flags.model || (question && !flags.yes
-        ? await askWithDefault(question, `${displayName(target)} model`, defaultModel)
+        ? await askWithDefault(question, `${displayName(target)} ${t.modelSuffix}`, defaultModel)
         : defaultModel);
     }
 
@@ -76,7 +141,7 @@ export async function run(argv = process.argv.slice(2), env = process.env, io = 
       models
     });
 
-    writeLine(io, 'ModelSell configuration updated:');
+    writeLine(io, t.updated);
     for (const result of results) {
       writeLine(io, `- ${displayName(result.target)}: ${result.files.join(', ')}`);
     }
@@ -86,7 +151,7 @@ export async function run(argv = process.argv.slice(2), env = process.env, io = 
   }
 }
 
-export function renderBanner({ color = true } = {}) {
+export function renderBanner({ color = true, t = TRANSLATIONS.en } = {}) {
   const paint = makePainter(color);
   const logo = [
     ' __  __           _      _ ____       _ _ ',
@@ -100,20 +165,21 @@ export function renderBanner({ color = true } = {}) {
     '',
     ...logo.map((line, index) => paint(line, 36 + (index % 3))),
     paint('ModelSell CLI', 1),
-    paint('Configure Codex, Claude Code, and Gemini CLI', 2),
+    paint(t.subtitle, 2),
     ''
   ].join('\n');
 }
 
-export function renderTargetMenu() {
+export function renderTargetMenu(t = TRANSLATIONS.en) {
+  const choices = targetChoices(t);
   return [
-    'Select what you want to configure:',
-    ...TARGET_CHOICES.map((choice, index) => `${index + 1}. ${choice.label}  ${choice.detail}`),
+    t.selectTargets,
+    ...choices.map((choice, index) => `${index + 1}. ${choice.label}  ${choice.detail}`),
     ''
   ].join('\n');
 }
 
-function parseArgs(args) {
+function parseArgs(args, t) {
   const flags = {};
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -127,45 +193,46 @@ function parseArgs(args) {
       const value = inlineValue ?? args[index + 1];
       if (inlineValue === undefined) index += 1;
       if (!value || value.startsWith('--')) {
-        throw new Error(`Missing value for --${rawKey}`);
+        throw new Error(`${t.missingValue}: --${rawKey}`);
       }
       flags[key] = value;
     } else {
-      throw new Error(`Unexpected argument: ${arg}`);
+      throw new Error(`${t.unexpectedArgument}: ${arg}`);
     }
   }
   return flags;
 }
 
-function parseTargets(value = 'all') {
+function parseTargets(value = 'all', t = TRANSLATIONS.en) {
   if (value === 'all') return DEFAULT_TARGETS;
   const targets = value.split(',').map((target) => target.trim()).filter(Boolean);
   const unsupported = targets.filter((target) => !DEFAULT_TARGETS.includes(target));
   if (unsupported.length) {
-    throw new Error(`Unsupported target: ${unsupported.join(', ')}`);
+    throw new Error(`${t.unsupportedTarget}: ${unsupported.join(', ')}`);
   }
   return [...new Set(targets)];
 }
 
-async function chooseTargets(question, io) {
+async function chooseTargets(question, io, t) {
   if (!question) return DEFAULT_TARGETS;
-  writeLine(io, renderTargetMenu());
+  writeLine(io, renderTargetMenu(t));
+  const choices = targetChoices(t);
 
   while (true) {
-    const answer = (await question('Choose [1]: ')).trim() || '1';
-    const choice = TARGET_CHOICES[Number(answer) - 1];
-    if (choice) return parseTargets(choice.key);
+    const answer = (await question(`${t.choosePrompt} [1]: `)).trim() || '1';
+    const choice = choices[Number(answer) - 1];
+    if (choice) return parseTargets(choice.key, t);
 
-    const directTargets = tryParseTargets(answer);
+    const directTargets = tryParseTargets(answer, t);
     if (directTargets) return directTargets;
 
-    writeLine(io, 'Please choose 1-4, or type codex, claude, gemini, or all.');
+    writeLine(io, t.chooseInvalid);
   }
 }
 
-function tryParseTargets(value) {
+function tryParseTargets(value, t) {
   try {
-    return parseTargets(value);
+    return parseTargets(value, t);
   } catch {
     return null;
   }
@@ -176,13 +243,36 @@ async function askWithDefault(question, label, defaultValue) {
   return answer.trim() || defaultValue;
 }
 
-async function askRequired(question, io, label) {
-  if (!question) throw new Error(`${label} is required. Pass --api-key or set MODELSELL_API_KEY.`);
+async function askRequired(question, io, label, t) {
+  if (!question) throw new Error(`${label} ${t.requiredSuffix}`);
   while (true) {
     const answer = await question(`${label}: `);
     if (answer.trim()) return answer.trim();
-    writeLine(io, `${label} cannot be empty.`);
+    writeLine(io, `${label} ${t.cannotBeEmptySuffix}`);
   }
+}
+
+function targetChoices(t) {
+  return [
+    { key: 'all', label: t.allLabel, detail: t.allDetail },
+    { key: 'codex', label: 'Codex', detail: t.codexDetail },
+    { key: 'claude', label: 'Claude Code', detail: t.claudeDetail },
+    { key: 'gemini', label: 'Gemini CLI', detail: t.geminiDetail }
+  ];
+}
+
+function getTranslations(env) {
+  return isChineseLocale(env) ? TRANSLATIONS.zh : TRANSLATIONS.en;
+}
+
+function isChineseLocale(env) {
+  const locale = [
+    env.LC_ALL,
+    env.LC_MESSAGES,
+    env.LANG,
+    env.LANGUAGE
+  ].filter(Boolean).join(' ').toLowerCase();
+  return /\bzh\b|zh[_-]/.test(locale);
 }
 
 function toCamelCase(value) {

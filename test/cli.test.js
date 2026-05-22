@@ -23,6 +23,20 @@ test('prints help without starting interactive prompts', async () => {
   assert.match(lines.join('\n'), /Usage:/);
 });
 
+test('prints Chinese help for Chinese locales', async () => {
+  const originalLog = console.log;
+  const lines = [];
+  console.log = (line = '') => lines.push(String(line));
+  try {
+    const code = await run(['--help'], { HOME: await tempHome(), LANG: 'zh_CN.UTF-8' });
+    assert.equal(code, 0);
+  } finally {
+    console.log = originalLog;
+  }
+  assert.match(lines.join('\n'), /用法:/);
+  assert.match(lines.join('\n'), /配置 Codex、Claude Code 和 Gemini CLI/);
+});
+
 test('configures selected target in non-interactive mode', async () => {
   const home = await tempHome();
   const originalLog = console.log;
@@ -69,6 +83,31 @@ test('interactive mode shows banner and lets user choose a target by number', as
   const env = await readFile(path.join(home, '.gemini', '.env'), 'utf8');
   assert.match(env, /^GEMINI_API_KEY=sk-ui$/m);
   assert.match(env, /^GEMINI_MODEL=gemini-ui$/m);
+});
+
+test('interactive mode uses Chinese descriptions and prompts for Chinese locales', async () => {
+  const home = await tempHome();
+  const prompts = [];
+  const output = [];
+  const answers = ['4', '', 'sk-ui', 'gemini-ui'];
+
+  const code = await run(['configure'], { HOME: home, NO_COLOR: '1', LANG: 'zh_CN.UTF-8' }, {
+    log: (line = '') => output.push(String(line)),
+    question: async (prompt) => {
+      prompts.push(prompt);
+      return answers.shift() ?? '';
+    }
+  });
+
+  assert.equal(code, 0);
+  assert.match(output.join('\n'), /配置 Codex、Claude Code 和 Gemini CLI/);
+  assert.match(output.join('\n'), /请选择要配置的工具/);
+  assert.deepEqual(prompts, [
+    '请选择 [1]: ',
+    '基础 URL [https://www.modelsell.com]: ',
+    'API 密钥: ',
+    'Gemini CLI 模型 [gemini-3.1-pro-preview]: '
+  ]);
 });
 
 test('renders colorful ModelSell CLI banner', () => {
