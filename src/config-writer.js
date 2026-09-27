@@ -154,7 +154,10 @@ async function configureGemini(options) {
   const model = pickModel(options, 'gemini');
   const settings = await readJson(settingsPath);
   settings.security = mergePlain(settings.security, {
-    auth: mergePlain(settings.security?.auth, { selectedType: 'gemini-api-key' })
+    auth: mergePlain(settings.security?.auth, {
+      selectedType: 'gemini-api-key',
+      enforcedType: 'gemini-api-key'
+    })
   });
   settings.model = mergePlain(settings.model, { name: model });
 

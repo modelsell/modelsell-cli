@@ -95,6 +95,7 @@ test('writes Gemini settings and env file', async () => {
   const settings = JSON.parse(await readFile(path.join(home, '.gemini', 'settings.json'), 'utf8'));
   const env = await readFile(path.join(home, '.gemini', '.env'), 'utf8');
   assert.equal(settings.security.auth.selectedType, 'gemini-api-key');
+  assert.equal(settings.security.auth.enforcedType, 'gemini-api-key');
   assert.equal(settings.model.name, 'gemini-3.1-pro-preview');
   assert.match(env, /^GEMINI_API_KEY=sk-gemini$/m);
   assert.match(env, /^GEMINI_MODEL=gemini-3.1-pro-preview$/m);

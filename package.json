@@ -1,20 +1,29 @@
 {
   "name": "modelsell-cli",
-  "version": "0.1.0",
-  "description": "Configure Codex, Claude Code, and Gemini CLI to use ModelSell.",
+  "version": "0.2.0",
+  "description": "Run Modelsell AI models from your terminal and configure coding agents.",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/modelsell/modelsell-cli.git"
+  },
+  "homepage": "https://github.com/modelsell/modelsell-cli#readme",
   "bin": {
     "modelsell": "./bin/modelsell.js"
   },
+  "files": ["bin", "src", "docs/model-api.md", "docs/wavespeed-cli-research.md", "README.md", "LICENSE"],
   "scripts": {
     "build": "node scripts/build-binaries.mjs",
+    "package:release": "node scripts/package-release.mjs",
     "test": "node --test"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
-    "@iarna/toml": "^2.2.5"
+    "@iarna/toml": "^2.2.5",
+    "ws": "^8.22.0"
   },
   "devDependencies": {
     "@yao-pkg/pkg": "^6.19.0",

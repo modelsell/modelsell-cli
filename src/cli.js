@@ -1,6 +1,7 @@
 import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { applyConfiguration, DEFAULT_BASE_URL, DEFAULT_TARGETS, getDefaultModel } from './config-writer.js';
+import { API_COMMANDS, API_HELP, runAPI } from './api-cli.js';
 
 const TRANSLATIONS = {
   en: {
@@ -90,10 +91,12 @@ ${t.options}
   ${t.geminiModelOption}
   ${t.yesOption}
   ${t.helpOption}
-`.trim();
+${API_HELP}`.trim();
 }
 
 export async function run(argv = process.argv.slice(2), env = process.env, io = {}) {
+  if (API_COMMANDS.has(argv[0])) return runAPI(argv, env, io);
+  if (argv[0] === '--version') { writeLine(io, '0.2.0'); return 0; }
   const t = getTranslations(env);
   const command = argv[0] && !argv[0].startsWith('-') ? argv[0] : 'configure';
   const args = argv[0] && !argv[0].startsWith('-') ? argv.slice(1) : argv;

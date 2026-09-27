@@ -1,7 +1,29 @@
 # ModelSell CLI
 
+Version 0.2.0 adds direct model invocation: live model discovery, text/image/video/audio/3D
+requests, streaming, resumable tasks, file inputs, downloads, and Agent skills.
+The existing configuration workflow is preserved.
+
+**模型调用新功能：** 请看 [模型调用指南](docs/model-api.md) 与
+[WaveSpeed CLI 调研记录](docs/wavespeed-cli-research.md)。
+通过 [GitHub Releases](https://github.com/modelsell/modelsell-cli/releases/latest)
+下载独立程序，或直接安装 Release 中的 npm 格式包：
+
+```sh
+npm install -g https://github.com/modelsell/modelsell-cli/releases/download/v0.2.0/modelsell-cli-0.2.0.tgz
+```
+
+```sh
+modelsell login
+modelsell models --type image
+modelsell run gpt-image-2 -p '海边的小屋，水彩风格' --json
+modelsell skill install
+```
+
 ModelSell CLI helps you quickly configure Codex, Claude Code, Gemini CLI, and
 OpenClaw to use the ModelSell API service.
+
+Open source under the [MIT License](LICENSE).
 
 Default API base URL: `https://www.modelsell.com`
 
@@ -67,7 +89,23 @@ Windows 安装脚本默认会把 `modelsell.exe` 安装到：
 %USERPROFILE%\.local\bin\modelsell.exe
 ```
 
-如果安装后系统找不到 `modelsell` 命令，请重新打开 PowerShell，或确认安装目录已加入 `PATH`。
+安装完成后，请在终端输入 `modelsell` 进入配置界面。
+
+如果输入 `modelsell` 后提示“找不到命令”或“无法识别”，可以直接使用安装器显示的完整路径。默认路径如下：
+
+macOS / Linux：
+
+```sh
+~/.local/bin/modelsell
+```
+
+Windows PowerShell：
+
+```powershell
+& "$HOME\.local\bin\modelsell.exe"
+```
+
+Windows 安装器也会尝试把安装目录加入用户 `PATH`；重新打开 PowerShell 后即可直接输入 `modelsell`。
 
 ### 手动下载
 
@@ -197,8 +235,25 @@ The Windows installer writes the binary to:
 %USERPROFILE%\.local\bin\modelsell.exe
 ```
 
-If `modelsell` is not found after installation, reopen PowerShell or confirm the
-install directory is in your `PATH`.
+After installation, type `modelsell` in your terminal to open the setup UI.
+
+If `modelsell` is not found or recognized, use the full path printed by the
+installer. The default paths are:
+
+macOS / Linux:
+
+```sh
+~/.local/bin/modelsell
+```
+
+Windows PowerShell:
+
+```powershell
+& "$HOME\.local\bin\modelsell.exe"
+```
+
+The Windows installer also attempts to add the install directory to your user
+`PATH`. Open a new PowerShell window before trying `modelsell` again.
 
 ### Manual Download
 

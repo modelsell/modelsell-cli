@@ -21,12 +21,28 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Verify native binary
+        run: |
+          if [ "$(uname -m)" = "arm64" ]; then
+            ./dist/modelsell-darwin-arm64 --version
+            ./dist/modelsell-darwin-arm64 run --help
+          else
+            ./dist/modelsell-darwin-x64 --version
+            ./dist/modelsell-darwin-x64 run --help
+          fi
+      - run: npm run package:release
       - uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
+          draft: true
+          fail_on_unmatched_files: true
           files: |
             dist/modelsell-darwin-arm64
             dist/modelsell-darwin-x64
             dist/modelsell-linux-arm64
             dist/modelsell-linux-x64
             dist/modelsell-win-x64.exe
+            dist/modelsell-cli-*.tgz
+            dist/install.sh
+            dist/install.ps1
+            dist/SHA256SUMS
