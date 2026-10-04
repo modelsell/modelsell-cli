@@ -1,0 +1,20 @@
+{
+  "name": "modelsell",
+  "interface": {
+    "displayName": "ModelSell"
+  },
+  "plugins": [
+    {
+      "name": "modelsell",
+      "source": {
+        "source": "local",
+        "path": "./plugins/modelsell"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

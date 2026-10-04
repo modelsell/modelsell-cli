@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "modelsell": {
+      "command": "modelsell",
+      "args": ["mcp"],
+      "env_vars": ["MODELSELL_API_KEY", "MODELSELL_BASE_URL", "MODELSELL_CONFIG_DIR", "XDG_CONFIG_HOME", "HOME", "USERPROFILE", "PATH"],
+      "startup_timeout_sec": 20,
+      "tool_timeout_sec": 900
+    }
+  }
+}

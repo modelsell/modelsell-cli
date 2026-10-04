@@ -1,7 +1,7 @@
 import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
-const booleans = new Set(['json', 'help', 'stream', 'no-wait', 'dry-run', 'all', 'key-stdin', 'multipart', 'force']);
+const booleans = new Set(['json', 'help', 'stream', 'no-wait', 'dry-run', 'all', 'key-stdin', 'multipart', 'force', 'compact']);
 const values = new Set(['base-url', 'endpoint', 'input-file', 'input', 'prompt', 'output', 'download', 'timeout', 'poll-interval', 'type', 'method', 'path', 'fetch-path', 'header', 'file', 'target', 'limit', 'default-model']);
 const repeat = new Set(['input', 'header', 'file']);
 const short = { h: 'help', p: 'prompt', i: 'input', o: 'output', H: 'header' };

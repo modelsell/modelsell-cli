@@ -1,4 +1,4 @@
-export const agentSkill = `---
+---
 name: modelsell
 description: Discover and invoke Modelsell models from the terminal, including text, images, video, audio, embeddings, reranking, and 3D. Use when the user asks to run Modelsell models or retrieve their generated results.
 ---
@@ -25,4 +25,3 @@ Use modelsell request /native/path --method POST --input-file request.json --jso
 --stream --json emits JSONL events; other --json commands emit one JSON value. Errors have nonzero exit codes. Progress goes to stderr. modelsell price shows public pricing metadata, not a user-specific quote. modelsell usage reports API-key quota in server units, not the account's cash balance. modelsell history lists only locally recorded tasks.
 
 Project aliases are stored in modelsell.json with defaultModel and aliases: {name: {model, endpoint, input}}. They cannot change the credential destination. Preserve the user's prompt and requested parameters. Do not modify other agent configuration unless requested; modelsell configure is a separate workflow.
-`;

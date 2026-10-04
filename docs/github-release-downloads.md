@@ -1,6 +1,6 @@
 # GitHub Release Downloads
 
-Current release: `v0.2.0`. Source code is licensed under MIT.
+Current release: `v0.3.0`. Source code is licensed under MIT.
 
 ## Latest URLs
 
@@ -12,22 +12,22 @@ Current release: `v0.2.0`. Source code is licensed under MIT.
 
 ## Versioned URLs
 
-- macOS Apple Silicon: https://github.com/modelsell/modelsell-cli/releases/download/v0.2.0/modelsell-darwin-arm64
-- macOS Intel: https://github.com/modelsell/modelsell-cli/releases/download/v0.2.0/modelsell-darwin-x64
-- Linux ARM64: https://github.com/modelsell/modelsell-cli/releases/download/v0.2.0/modelsell-linux-arm64
-- Linux x64: https://github.com/modelsell/modelsell-cli/releases/download/v0.2.0/modelsell-linux-x64
-- Windows x64: https://github.com/modelsell/modelsell-cli/releases/download/v0.2.0/modelsell-win-x64.exe
-- npm package: https://github.com/modelsell/modelsell-cli/releases/download/v0.2.0/modelsell-cli-0.2.0.tgz
-- SHA256 checksums: https://github.com/modelsell/modelsell-cli/releases/download/v0.2.0/SHA256SUMS
+- macOS Apple Silicon: https://github.com/modelsell/modelsell-cli/releases/download/v0.3.0/modelsell-darwin-arm64
+- macOS Intel: https://github.com/modelsell/modelsell-cli/releases/download/v0.3.0/modelsell-darwin-x64
+- Linux ARM64: https://github.com/modelsell/modelsell-cli/releases/download/v0.3.0/modelsell-linux-arm64
+- Linux x64: https://github.com/modelsell/modelsell-cli/releases/download/v0.3.0/modelsell-linux-x64
+- Windows x64: https://github.com/modelsell/modelsell-cli/releases/download/v0.3.0/modelsell-win-x64.exe
+- npm package: https://github.com/modelsell/modelsell-cli/releases/download/v0.3.0/modelsell-cli-0.3.0.tgz
+- SHA256 checksums: https://github.com/modelsell/modelsell-cli/releases/download/v0.3.0/SHA256SUMS
 
 ## Release Command
 
 After GitHub credentials are configured:
 
 ```sh
-git tag v0.2.0
+git tag v0.3.0
 git push origin main
-git push origin v0.2.0
+git push origin v0.3.0
 ```
 
 The release workflow tests and builds the tagged source, then uploads all five

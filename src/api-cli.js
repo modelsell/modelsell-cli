@@ -4,17 +4,18 @@ import path from 'node:path';
 import { Client, APIError, apiURL, headersFrom, positiveNumber, businessError } from './api/client.js';
 import { loadSettings, saveJSON, readJSON } from './api/config.js';
 import { parseArgs, buildInput, encodeBody, readStdin, safeObject } from './api/input.js';
-import { catalog } from './api/catalog.js';
+import { catalog, summarizeModel } from './api/catalog.js';
+import { serveMCP, MCP_HELP } from './api/mcp.js';
 import { protocols, resolveProtocol, prepareRequest } from './api/protocols.js';
 import { taskState, rememberTask, recalledTask, waitTask, extractOutputs, extractText, saveBytes, saveResponse, downloadOutputs } from './api/tasks.js';
 import { consumeSSE, realtime } from './api/stream.js';
 import { agentSkill } from './api/skill.js';
 
-export const API_COMMANDS = new Set(['login', 'logout', 'status', 'models', 'schema', 'endpoints', 'run', 'request', 'show', 'wait', 'history', 'usage', 'price', 'download', 'upload', 'init', 'aliases', 'skill', 'realtime']);
+export const API_COMMANDS = new Set(['login', 'logout', 'status', 'models', 'schema', 'endpoints', 'run', 'request', 'show', 'wait', 'history', 'usage', 'price', 'download', 'upload', 'init', 'aliases', 'skill', 'realtime', 'mcp']);
 export const API_HELP = `
 Model invocation / 模型调用:
   modelsell login [--key-stdin]             Validate and save an API key
-  modelsell models [query] [--type video]   Live catalog; --all for public catalog
+  modelsell models [query] [--type video]   Live catalog; --all public, --compact brief
   modelsell run [model|alias] -p "..."      Run text, image, video, audio or 3D models
   modelsell run <model> --help              Model endpoint and parameter help
   modelsell schema <model> [--json]         Live metadata + protocol defaults
@@ -31,6 +32,7 @@ Model invocation / 模型调用:
   modelsell init                          Create modelsell.json for aliases/defaults
   modelsell aliases                       List project aliases
   modelsell skill install                 Install project skill for Codex/Claude
+  modelsell mcp                           MCP server (stdio) for agents; mcp --help
   modelsell status | logout                Inspect/clear model API login
 
 Run options:
@@ -97,6 +99,11 @@ export async function runAPI(argv, env = process.env, io = {}) {
     const parsed = parseArgs(argv.slice(1)); flags = parsed.flags;
     const [arg, ...rest] = parsed.positional;
     if (rest.length) throw new Error('Too many positional arguments.');
+    if (command === 'mcp') {
+      if (flags.help) { flags.json ? emit({ help: MCP_HELP }) : write(MCP_HELP); return 0; }
+      if (arg || Object.keys(parsed.dynamic).length) throw new Error('Use modelsell mcp [--base-url URL].');
+      return await serveMCP({ runAPI, env, flags, stdin, stdout, stderr, cwd, fetch: io.fetch });
+    }
     if (flags.help && (!['run', 'schema'].includes(command) || !arg)) { flags.json ? emit({ help: API_HELP }) : write(API_HELP); return 0; }
     if (!['run', 'request', 'upload'].includes(command) && Object.keys(parsed.dynamic).length) throw new Error(`Unknown option: ${Object.keys(parsed.dynamic)[0]}`);
     settings = await loadSettings(env, flags, cwd);
@@ -195,7 +202,7 @@ export async function runAPI(argv, env = process.env, io = {}) {
       if (command === 'models') {
         const query = (arg || '').toLowerCase();
         const models = data.models.filter(m => (!query || [m.id, m.description, m.category].some(v => String(v || '').toLowerCase().includes(query))) && (!flags.type || m.category === flags.type || m.supported_endpoint_types?.includes(flags.type) || m.output_modalities?.includes(flags.type)));
-        output({ scope: data.scope, models }, models.map(m => `${m.id}\t${m.category || ''}\t${(m.supported_endpoint_types || []).join(',')}`).join('\n')); return 0;
+        output({ scope: data.scope, models: flags.compact ? models.map(summarizeModel) : models }, models.map(m => `${m.id}\t${m.category || ''}\t${(m.supported_endpoint_types || []).join(',')}`).join('\n')); return 0;
       }
       if (command === 'endpoints') { output({ protocol_adapters: protocols, live_endpoints: data.endpoints }); return 0; }
       const token = arg || settings.project.defaultModel;

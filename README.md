@@ -10,13 +10,15 @@ configure your coding agents with the same CLI.
 [模型调用指南](docs/model-api.md) ·
 [GitHub Releases](https://github.com/modelsell/modelsell-cli/releases/latest)
 
-**v0.2.0** 新增模型发现与调用、流式输出、异步任务恢复、文件输入与下载、项目别名和 Agent Skill。
-原有编程工具配置功能继续保留。
+**v0.3.0** 新增 `modelsell mcp` 服务和 Codex 插件，Codex、Claude Code、Gemini CLI 等 Agent
+可直接调用 ModelSell 全部模型；调用时使用每个模型自带的端点配置和文档链接；`models --compact`
+输出适合 Agent 阅读的精简目录。v0.2.0 起提供模型发现与调用、流式输出、异步任务恢复、文件输入与下载、
+项目别名和 Agent Skill，原有编程工具配置功能继续保留。
 
 下载独立程序无需安装 Node.js；使用下面的 GitHub Release npm 包需要 Node.js 18+：
 
 ```sh
-npm install -g https://github.com/modelsell/modelsell-cli/releases/download/v0.2.0/modelsell-cli-0.2.0.tgz
+npm install -g https://github.com/modelsell/modelsell-cli/releases/download/v0.3.0/modelsell-cli-0.3.0.tgz
 ```
 
 ```sh
@@ -34,7 +36,7 @@ Default API base URL: `https://www.modelsell.com`
 
 ### 项目功能
 
-`modelsell` 同时提供模型 API 调用和编程工具配置。v0.2.0 新增能力如下：
+`modelsell` 同时提供模型 API 调用和编程工具配置。主要能力如下：
 
 | 能力 | 命令与用途 |
 | --- | --- |
@@ -48,6 +50,7 @@ Default API base URL: `https://www.modelsell.com`
 | 原生 API 与自动化 | `request` 调用原生路径，支持 JSON、multipart 和协议头；`--json` 便于脚本处理 |
 | 项目默认值与别名 | `init` 创建 `modelsell.json`，`aliases` 查看可复用的模型和参数配置 |
 | Agent Skill | `skill install` 为当前项目的 Codex / Claude Code 安装模型调用说明 |
+| MCP 与 Codex 插件 | `mcp` 为 Agent 提供模型调用工具；Codex 插件内置该服务（v0.3.0） |
 | 配额与价格 | `usage` 查询当前 Key 的 quota，`price` 查询公开价格元信息 |
 
 原有配置能力支持 Codex、Claude Code、Gemini CLI、OpenClaw：
@@ -268,6 +271,46 @@ Skill 默认安装到当前项目的 `.agents/skills/modelsell/SKILL.md` 和
 `.claude/skills/modelsell/SKILL.md`；可通过 `--target codex` 或 `--target claude`
 选择目标。项目配置用于共享模型和参数，不存放 API Key。
 
+### Codex 插件
+
+本仓库同时是一个 Codex 插件市场，`plugins/modelsell` 提供 `modelsell`（模型调用）
+和 `modelsell-setup`（安装与登录）两个技能，在所有项目中可用，无需逐个项目运行
+`skill install`：
+
+```sh
+codex plugin marketplace add modelsell/modelsell-cli
+codex plugin add modelsell@modelsell
+```
+
+插件自带 `modelsell mcp` 服务，需要先安装 CLI 并登录（`modelsell login` 或设置
+`MODELSELL_API_KEY`）。MCP 服务不受 Codex 沙箱断网限制；只读工具直接可用，
+`modelsell_run_model` 等可能计费的调用会请求你确认。
+
+### 在 Agent 中使用（MCP）
+
+`modelsell mcp` 是一个 stdio MCP 服务，让 Codex、Claude Code、Gemini CLI 等 Agent
+直接调用 ModelSell 全部模型：
+
+| 工具 | 用途 |
+| --- | --- |
+| `modelsell_list_models` | 按关键词、类型搜索当前 Key 可用的模型（精简输出，含文档链接） |
+| `modelsell_describe_model` | 查看模型的协议、路径、参数和 `docs_url` |
+| `modelsell_run_model` | 调用模型，支持 prompt、原生参数、文件上传、下载和 dry-run |
+| `modelsell_get_task` | 查询或继续等待异步任务，不会重复提交 |
+| `modelsell_list_tasks` | 查看本机记录的任务 |
+| `modelsell_api_request` | 调用原生 API 路径 |
+| `modelsell_status` | 查看登录状态（不返回 Key） |
+
+```sh
+claude mcp add modelsell -- modelsell mcp
+codex mcp add modelsell -- modelsell mcp
+gemini mcp add modelsell modelsell mcp
+```
+
+视频等长任务可能超过客户端的工具超时：可以调大超时（Codex 插件已设为 900 秒），
+或用 `wait: false` 提交后再用 `modelsell_get_task` 继续等待。命令行里也可以用
+`modelsell models --compact --json` 获取适合 Agent 阅读的精简目录。
+
 ### 配额、价格与能力范围
 
 ```sh
@@ -328,7 +371,7 @@ MODELSELL_API_KEY=sk-xxx modelsell configure --yes
 ### What It Does
 
 `modelsell` provides direct model API access alongside coding agent setup.
-Version 0.2.0 adds:
+Main features:
 
 | Feature | Commands and behavior |
 | --- | --- |
@@ -342,6 +385,7 @@ Version 0.2.0 adds:
 | Native APIs and scripting | `request` supports native paths, JSON, multipart, and protocol headers; `--json` provides structured output |
 | Project aliases | `init` creates `modelsell.json`; `aliases` lists reusable model and parameter settings |
 | Agent skills | `skill install` adds model invocation guidance for Codex and Claude Code in the current project |
+| MCP and Codex plugin | `mcp` gives agents model invocation tools; the Codex plugin bundles it (v0.3.0) |
 | Quota and pricing | `usage` retrieves key quota; `price` retrieves public pricing metadata |
 
 Existing setup features support Codex, Claude Code, Gemini CLI, and OpenClaw:
@@ -571,6 +615,48 @@ Skills are installed into `.agents/skills/modelsell/SKILL.md` and
 `.claude/skills/modelsell/SKILL.md` in the current project. Use `--target codex`
 or `--target claude` to select one. Project configuration shares models and
 parameters, not API keys.
+
+### Codex Plugin
+
+This repository is also a Codex plugin marketplace. `plugins/modelsell` ships
+the `modelsell` (model invocation) and `modelsell-setup` (install and sign-in)
+skills for every project, without running `skill install` per project:
+
+```sh
+codex plugin marketplace add modelsell/modelsell-cli
+codex plugin add modelsell@modelsell
+```
+
+The plugin bundles the `modelsell mcp` server, so install the CLI and log in
+first (`modelsell login` or `MODELSELL_API_KEY`). The MCP server is not affected
+by the Codex sandbox's network block; read-only tools run directly and
+potentially billable calls such as `modelsell_run_model` ask for approval.
+
+### Use From Agents (MCP)
+
+`modelsell mcp` is a stdio MCP server that lets Codex, Claude Code, Gemini CLI
+and other agents call every ModelSell model:
+
+| Tool | Purpose |
+| --- | --- |
+| `modelsell_list_models` | Search models available to your key (compact, with docs links) |
+| `modelsell_describe_model` | Protocol, path, parameters and `docs_url` for a model |
+| `modelsell_run_model` | Run a model with a prompt, native input, uploads, downloads or dry-run |
+| `modelsell_get_task` | Check or resume an async task without resubmitting |
+| `modelsell_list_tasks` | Tasks recorded on this machine |
+| `modelsell_api_request` | Native API paths |
+| `modelsell_status` | Login state (never returns the key) |
+
+```sh
+claude mcp add modelsell -- modelsell mcp
+codex mcp add modelsell -- modelsell mcp
+gemini mcp add modelsell modelsell mcp
+```
+
+Video and other long jobs can exceed a client's tool timeout. Raise it (the
+Codex plugin uses 900 seconds) or submit with `wait: false` and resume with
+`modelsell_get_task`. On the command line, `modelsell models --compact --json`
+returns a token-light catalog for agents.
 
 ### Quota, Pricing, and Coverage
 

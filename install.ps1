@@ -5,7 +5,7 @@ $ErrorActionPreference = "Stop"
 $Version = if ($env:MODELSELL_VERSION) { $env:MODELSELL_VERSION } else { "latest" }
 $BinDir = if ($env:MODELSELL_BIN_DIR) { $env:MODELSELL_BIN_DIR } else { Join-Path $HOME ".local\bin" }
 $BaseUrl = if ($env:MODELSELL_DOWNLOAD_BASE_URL) { $env:MODELSELL_DOWNLOAD_BASE_URL } else { "https://static.modelsell.com/modelsell-cli" }
-$CacheBust = if ($env:MODELSELL_CACHE_BUST) { $env:MODELSELL_CACHE_BUST } else { "0.2.0" }
+$CacheBust = if ($env:MODELSELL_CACHE_BUST) { $env:MODELSELL_CACHE_BUST } else { "0.3.0" }
 
 $Asset = "modelsell-win-x64.exe"
 $Url = "$BaseUrl/$Asset"

@@ -17,3 +17,22 @@ export async function catalog(client, { all = false } = {}) {
   }
   return { models, endpoints: pricing.supported_endpoint || {}, scope, ...(pricing.warning ? { warning: pricing.warning } : {}) };
 }
+
+// A token-light view for agents; the full metadata is still available without --compact.
+export function summarizeModel(m) {
+  const docs = [...new Set(Object.values(m.supported_endpoints || {}).map(e => e?.docs_url).filter(Boolean))];
+  const description = String(m.description || '');
+  const summary = {
+    id: m.id,
+    category: m.category,
+    endpoints: m.supported_endpoint_types,
+    input: m.input_modalities,
+    output: m.output_modalities,
+    capabilities: m.capabilities,
+    context_length: m.context_length,
+    max_output_tokens: m.max_output_tokens,
+    description: description.length > 160 ? description.slice(0, 157) + '...' : description || undefined,
+    docs: docs.length ? docs : undefined
+  };
+  return Object.fromEntries(Object.entries(summary).filter(([, v]) => v !== undefined && v !== null && !(Array.isArray(v) && !v.length)));
+}

@@ -52,7 +52,7 @@ export class Client {
     try {
       const response = await this.fetch(url, {
         method, body, redirect: 'error', signal: controller.signal,
-        headers: { 'User-Agent': 'modelsell-cli/0.2.0', ...(typeof body === 'string' ? { 'Content-Type': 'application/json' } : {}), ...headers, ...(auth ? { Authorization: `Bearer ${this.apiKey}` } : {}) }
+        headers: { 'User-Agent': 'modelsell-cli/0.3.0', ...(typeof body === 'string' ? { 'Content-Type': 'application/json' } : {}), ...headers, ...(auth ? { Authorization: `Bearer ${this.apiKey}` } : {}) }
       });
       if (!response.ok) {
         const text = await response.text();

@@ -1,0 +1,45 @@
+{
+  "name": "modelsell",
+  "version": "0.3.0",
+  "description": "Discover and run ModelSell text, image, video, audio, embedding, and 3D models from Codex through the modelsell CLI.",
+  "author": {
+    "name": "ModelSell",
+    "url": "https://www.modelsell.com"
+  },
+  "homepage": "https://github.com/modelsell/modelsell-cli#readme",
+  "repository": "https://github.com/modelsell/modelsell-cli",
+  "license": "MIT",
+  "keywords": [
+    "modelsell",
+    "image generation",
+    "video generation",
+    "audio",
+    "embeddings",
+    "3d",
+    "models"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "ModelSell",
+    "shortDescription": "Run ModelSell models from Codex",
+    "longDescription": "Find ModelSell models available to your API key, inspect their parameters, and generate text, images, video, audio, embeddings, and 3D assets with the modelsell CLI. Async jobs, downloads, and project aliases are handled for you.",
+    "developerName": "ModelSell",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://www.modelsell.com",
+    "composerIcon": "./assets/modelsell.svg",
+    "logo": "./assets/modelsell.svg",
+    "defaultPrompt": [
+      "List the ModelSell image models my key can use",
+      "Generate a watercolor beach house image with ModelSell and save it to ./images",
+      "Submit a short ModelSell video job and wait for the result"
+    ],
+    "brandColor": "#4F46E5",
+    "screenshots": []
+  }
+}

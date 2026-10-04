@@ -96,7 +96,7 @@ ${API_HELP}`.trim();
 
 export async function run(argv = process.argv.slice(2), env = process.env, io = {}) {
   if (API_COMMANDS.has(argv[0])) return runAPI(argv, env, io);
-  if (argv[0] === '--version') { writeLine(io, '0.2.0'); return 0; }
+  if (argv[0] === '--version') { writeLine(io, '0.3.0'); return 0; }
   const t = getTranslations(env);
   const command = argv[0] && !argv[0].startsWith('-') ? argv[0] : 'configure';
   const args = argv[0] && !argv[0].startsWith('-') ? argv.slice(1) : argv;

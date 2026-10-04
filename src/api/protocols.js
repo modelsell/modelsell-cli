@@ -59,7 +59,8 @@ export function resolveProtocol(model, entry, endpointMap, selected) {
   const type = selected || chooseProtocol(model, entry);
   if (!type) throw new Error(`No protocol metadata for ${model}. Choose --endpoint or use modelsell request.`);
   const builtin = protocols[type];
-  const advertised = endpointMap[type];
+  // Per-model metadata can carry its own submit/fetch paths and docs; prefer it over the global map.
+  const advertised = entry?.supported_endpoints?.[type] || endpointMap[type];
   if (!builtin && !advertised) throw new Error(`Unknown endpoint ${type}. Use modelsell endpoints or --path /native/path.`);
   const live = typeof advertised === 'string' ? { path: advertised } : (advertised || {});
   const config = live.config || {};
@@ -68,7 +69,8 @@ export function resolveProtocol(model, entry, endpointMap, selected) {
     fetch_path: config.fetch_path || builtin?.fetch_path,
     fetch_method: config.fetch_method || 'GET',
     parameters: { ...builtin?.parameters, ...config.parameters },
-    schema_source: config.parameters ? 'live-endpoint-metadata' : 'protocol-defaults'
+    schema_source: config.parameters ? 'live-endpoint-metadata' : 'protocol-defaults',
+    ...(live.docs_url ? { docs_url: live.docs_url } : {})
   };
   if (type === 'seedance2-native-video') delete result.parameters.prompt;
   if (type === 'suno' && model.startsWith('suno_')) result.path = `/suno/submit/${encodeURIComponent(model.slice(5))}`;
