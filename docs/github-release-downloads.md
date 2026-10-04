@@ -34,7 +34,8 @@ The release workflow tests and builds the tagged source, then uploads all five
 binaries, the npm-format package, installers, and checksums to a draft Release.
 Verify the workflow, download/check the assets, and publish the draft. Mirror the
 same verified artifacts to the static download site; retain the versioned files.
-The workflow does not publish to the npm registry.
+The workflow does not publish to the npm registry; run `npm publish` from the
+released commit after `npm login` (package: https://www.npmjs.com/package/modelsell-cli).
 
 ## Installer Script URLs
 

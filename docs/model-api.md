@@ -7,10 +7,10 @@
 ## 安装
 
 独立程序和安装脚本见 [GitHub Releases](https://github.com/modelsell/modelsell-cli/releases/latest)。
-也可用 npm 安装 GitHub Release 中的包：
+也可用 npm 安装：
 
 ```sh
-npm install -g https://github.com/modelsell/modelsell-cli/releases/download/v0.3.0/modelsell-cli-0.3.0.tgz
+npm install -g modelsell-cli
 modelsell --version
 ```
 

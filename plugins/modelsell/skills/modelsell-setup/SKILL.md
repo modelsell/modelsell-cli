@@ -11,7 +11,7 @@ If the command is missing, ask the user before installing anything. Installers:
 
 - macOS / Linux: curl -fsSL https://raw.githubusercontent.com/modelsell/modelsell-cli/main/install.sh | sh (mirror: https://static.modelsell.com/modelsell-cli/install.sh)
 - Windows PowerShell: irm https://raw.githubusercontent.com/modelsell/modelsell-cli/main/install.ps1 | iex
-- Node.js 18+: npm install -g https://github.com/modelsell/modelsell-cli/releases/download/v0.3.0/modelsell-cli-0.3.0.tgz
+- Node.js 18+: npm install -g modelsell-cli
 
 The installers put the binary in ~/.local/bin; if modelsell is not on PATH, call ~/.local/bin/modelsell directly.
 

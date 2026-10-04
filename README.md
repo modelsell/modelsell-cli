@@ -15,10 +15,10 @@ configure your coding agents with the same CLI.
 输出适合 Agent 阅读的精简目录。v0.2.0 起提供模型发现与调用、流式输出、异步任务恢复、文件输入与下载、
 项目别名和 Agent Skill，原有编程工具配置功能继续保留。
 
-下载独立程序无需安装 Node.js；使用下面的 GitHub Release npm 包需要 Node.js 18+：
+下载独立程序无需安装 Node.js；通过 npm 安装需要 Node.js 18+：
 
 ```sh
-npm install -g https://github.com/modelsell/modelsell-cli/releases/download/v0.3.0/modelsell-cli-0.3.0.tgz
+npm install -g modelsell-cli
 ```
 
 ```sh
