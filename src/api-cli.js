@@ -11,7 +11,7 @@ import { taskState, rememberTask, recalledTask, waitTask, extractOutputs, extrac
 import { consumeSSE, realtime } from './api/stream.js';
 import { agentSkill } from './api/skill.js';
 
-export const API_COMMANDS = new Set(['login', 'logout', 'status', 'models', 'schema', 'endpoints', 'run', 'request', 'show', 'wait', 'history', 'usage', 'price', 'download', 'upload', 'init', 'aliases', 'skill', 'realtime', 'mcp']);
+export const API_COMMANDS = new Set(['login', 'logout', 'status', 'models', 'schema', 'endpoints', 'run', 'request', 'show', 'wait', 'history', 'usage', 'price', 'download', 'upload', 'init', 'aliases', 'skill', 'realtime', 'mcp', 'auth']);
 export const API_HELP = `
 Model invocation / 模型调用:
   modelsell login [--key-stdin]             Validate and save an API key
@@ -34,6 +34,7 @@ Model invocation / 模型调用:
   modelsell skill install                 Install project skill for Codex/Claude
   modelsell mcp                           MCP server (stdio) for agents; mcp --help
   modelsell status | logout                Inspect/clear model API login
+  modelsell auth token                    Print the saved key (agent credential helper)
 
 Run options:
   -p, --prompt TEXT             Prompt shortcut for the selected protocol
@@ -113,6 +114,12 @@ export async function runAPI(argv, env = process.env, io = {}) {
     const headers = headersFrom(flags);
     const output = (value, human) => flags.json ? emit(value) : write((human === undefined ? JSON.stringify(value, null, 2) : human) + '\n');
 
+    if (command === 'auth') {
+      // Credential helper for agents (Codex model_providers.<id>.auth); prints only the key.
+      if (arg !== 'token') throw new Error('Use modelsell auth token [--base-url URL].');
+      if (!settings.apiKey) throw new Error('No API key for this API origin. Run modelsell login or modelsell configure.');
+      write(settings.apiKey + '\n'); return 0;
+    }
     if (command === 'status') {
       output({ base_url: settings.baseUrl, authenticated: Boolean(settings.apiKey), credential_source: env.MODELSELL_API_KEY ? 'environment' : settings.apiKey ? 'stored' : 'none', config_dir: settings.dir }); return 0;
     }

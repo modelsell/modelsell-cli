@@ -27,7 +27,7 @@ modelsell --version
 ```
 
 也可直接运行 `node bin/modelsell.js`，或使用 `npm run build` 生成的独立程序。
-打包文件可以通过 `npm install -g ./dist/modelsell-cli-0.3.0.tgz` 安装。
+打包文件可以通过 `npm install -g ./dist/modelsell-cli-0.4.0.tgz` 安装。
 发布文件同时提供 `SHA256SUMS`，可用于核对下载完整性。
 
 ## 登录与发现模型

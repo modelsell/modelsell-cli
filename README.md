@@ -1,7 +1,7 @@
 # ModelSell CLI
 
 在终端调用 ModelSell 的文本、图片、视频、音频和 3D 模型，也可以一键配置
-Codex、Claude Code、Gemini CLI 和 OpenClaw。
+Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Factory Droid 和 Kimi CLI。
 
 Run ModelSell text, image, video, audio, and 3D models from your terminal, and
 configure your coding agents with the same CLI.
@@ -10,6 +10,8 @@ configure your coding agents with the same CLI.
 [模型调用指南](docs/model-api.md) ·
 [GitHub Releases](https://github.com/modelsell/modelsell-cli/releases/latest)
 
+**v0.4.0** 修复 Codex 配置不发送 Key 的问题，适配 Claude Code、OpenClaw 等最新的第三方模型配置方式，
+新增 OpenCode、Qwen Code、Crush、Factory Droid、Kimi CLI 一键配置，默认模型跟随实时目录。
 **v0.3.0** 新增 `modelsell mcp` 服务和 Codex 插件，Codex、Claude Code、Gemini CLI 等 Agent
 可直接调用 ModelSell 全部模型；调用时使用每个模型自带的端点配置和文档链接；`models --compact`
 输出适合 Agent 阅读的精简目录。v0.2.0 起提供模型发现与调用、流式输出、异步任务恢复、文件输入与下载、
@@ -53,14 +55,26 @@ Default API base URL: `https://www.modelsell.com`
 | MCP 与 Codex 插件 | `mcp` 为 Agent 提供模型调用工具；Codex 插件内置该服务（v0.3.0） |
 | 配额与价格 | `usage` 查询当前 Key 的 quota，`price` 查询公开价格元信息 |
 
-原有配置能力支持 Codex、Claude Code、Gemini CLI、OpenClaw：
+编程工具配置支持 Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Factory Droid、Kimi CLI：
 
 - 交互式配置：运行 `modelsell` 后按提示选择要配置的工具。
 - 非交互式配置：适合脚本、自动化部署或快速初始化环境。
 - 多工具统一配置：可以一次性配置全部支持的工具，也可以只配置其中一个。
-- 默认模型写入：Codex、Claude Code、Gemini CLI 会写入对应默认模型。
-- OpenClaw 模型配置：会写入 ModelSell 的 OpenAI Responses 与 Anthropic
-  Messages 兼容模型配置。
+- 默认模型跟随实时目录：按当前 Key 可用的模型自动推荐最新的 GPT（Responses）、
+  Claude（Sonnet/Opus/Haiku/Fable）和 Gemini 模型；目录不可用时使用内置默认值。
+- Codex：通过 `modelsell auth token` 命令鉴权，Key 不写入 `config.toml`，也不会覆盖
+  `~/.codex/auth.json` 里的 ChatGPT 登录。
+- Claude Code：写入网关凭据、各模型档位（Sonnet/Opus/Haiku/Fable）和
+  `/model` 网关模型发现。
+- OpenClaw：GPT 走 Responses、Claude 走 Anthropic Messages、其余模型走 Chat
+  Completions，并写入真实的上下文长度。
+- OpenCode：写入 `modelsell` 自定义 provider 和推荐模型。
+- Qwen Code：在 `modelProviders` 中加入 ModelSell 路由（GPT 用 Responses、Claude 用
+  Anthropic、其余用 Chat Completions），不影响已有的其他 provider。
+- Crush：在 `crushrc` 中写入一段可重复替换的 ModelSell 配置，Key 通过
+  `modelsell auth token` 读取，不写入文件。
+- Factory Droid：写入 `customModels`，通过 `apiKeyHelper` 读取 Key。
+- Kimi CLI：写入 ModelSell provider 与模型，默认使用最新的 Kimi 模型。
 - 安全备份：写入前会自动备份已有配置文件，备份后缀为 `.bak.<timestamp>`。
 
 ### 一键安装
@@ -350,8 +364,10 @@ modelsell configure --target codex --api-key sk-xxx --yes
 支持的 `--target` 值：
 
 ```text
-all, codex, claude, gemini, openclaw
+all, codex, claude, gemini, openclaw, opencode, qwen, crush, droid, kimi
 ```
+
+可以用 `--<target>-model` 为单个工具指定模型，例如 `--qwen-model qwen3.7-plus`。
 
 也可以通过环境变量传入 API Key：
 
@@ -361,10 +377,15 @@ MODELSELL_API_KEY=sk-xxx modelsell configure --yes
 
 ### 写入的配置文件
 
-- Codex: `~/.codex/config.toml`、`~/.codex/auth.json`
+- Codex: `~/.codex/config.toml`、`~/.config/modelsell/credentials.json`
 - Claude Code: `~/.claude/settings.json`
-- Gemini CLI: `~/.gemini/settings.json`、`~/.gemini/.env`
+- Gemini CLI: `~/.gemini/settings.json`、`~/.gemini/.env`（Gemini CLI 只在受信任的目录加载 `.env`）
 - OpenClaw: `~/.openclaw/openclaw.json`、`~/.openclaw/.env`
+- OpenCode: `~/.config/opencode/opencode.json`（已有 `opencode.jsonc` 时更新该文件）
+- Qwen Code: `~/.qwen/settings.json`
+- Crush: `~/.config/crush/crushrc`、`~/.config/modelsell/credentials.json`
+- Factory Droid: `~/.factory/settings.json`、`~/.config/modelsell/credentials.json`
+- Kimi CLI: `~/.kimi/config.toml`
 
 ## English
 
@@ -388,17 +409,29 @@ Main features:
 | MCP and Codex plugin | `mcp` gives agents model invocation tools; the Codex plugin bundles it (v0.3.0) |
 | Quota and pricing | `usage` retrieves key quota; `price` retrieves public pricing metadata |
 
-Existing setup features support Codex, Claude Code, Gemini CLI, and OpenClaw:
+Agent setup supports Codex, Claude Code, Gemini CLI, OpenClaw, OpenCode, Qwen Code, Crush, Factory Droid, and Kimi CLI:
 
 - Interactive setup: run `modelsell` and follow the prompts.
 - Non-interactive setup: useful for scripts, automation, and environment
   bootstrap.
 - Multi-tool configuration: configure every supported tool at once, or choose a
   single target.
-- Default model setup: Codex, Claude Code, and Gemini CLI receive their default
-  model settings.
-- OpenClaw model setup: writes ModelSell-compatible OpenAI Responses and
-  Anthropic Messages provider configuration.
+- Live default models: the newest GPT (Responses), Claude (Sonnet/Opus/Haiku/
+  Fable) and Gemini models available to your key are suggested from the live
+  catalog, with built-in defaults when it is unreachable.
+- Codex: authenticates through `modelsell auth token`, so the key stays out of
+  `config.toml` and a ChatGPT login in `~/.codex/auth.json` is left alone.
+- Claude Code: gateway credential, per-tier models (Sonnet/Opus/Haiku/Fable)
+  and gateway model discovery for `/model`.
+- OpenClaw: GPT via Responses, Claude via Anthropic Messages, other models via
+  Chat Completions, with real context windows.
+- OpenCode: a `modelsell` custom provider with recommended models.
+- Qwen Code: ModelSell routes in `modelProviders` (GPT via Responses, Claude via
+  Anthropic, others via Chat Completions), leaving other providers untouched.
+- Crush: a replaceable ModelSell block in `crushrc`; the key is read through
+  `modelsell auth token` and never written to the file.
+- Factory Droid: `customModels` entries that read the key with `apiKeyHelper`.
+- Kimi CLI: ModelSell providers and models, defaulting to the newest Kimi model.
 - Safe backups: existing config files are backed up before writes with a
   `.bak.<timestamp>` suffix.
 
@@ -700,8 +733,10 @@ modelsell configure --target codex --api-key sk-xxx --yes
 Supported `--target` values:
 
 ```text
-all, codex, claude, gemini, openclaw
+all, codex, claude, gemini, openclaw, opencode, qwen, crush, droid, kimi
 ```
+
+Use `--<target>-model` to choose a model for one tool, for example `--qwen-model qwen3.7-plus`.
 
 You can also pass the API key through an environment variable:
 
@@ -711,10 +746,15 @@ MODELSELL_API_KEY=sk-xxx modelsell configure --yes
 
 ### Written Files
 
-- Codex: `~/.codex/config.toml`, `~/.codex/auth.json`
+- Codex: `~/.codex/config.toml`, `~/.config/modelsell/credentials.json`
 - Claude Code: `~/.claude/settings.json`
-- Gemini CLI: `~/.gemini/settings.json`, `~/.gemini/.env`
+- Gemini CLI: `~/.gemini/settings.json`, `~/.gemini/.env` (Gemini CLI loads `.env` only in trusted folders)
 - OpenClaw: `~/.openclaw/openclaw.json`, `~/.openclaw/.env`
+- OpenCode: `~/.config/opencode/opencode.json` (or an existing `opencode.jsonc`)
+- Qwen Code: `~/.qwen/settings.json`
+- Crush: `~/.config/crush/crushrc`, `~/.config/modelsell/credentials.json`
+- Factory Droid: `~/.factory/settings.json`, `~/.config/modelsell/credentials.json`
+- Kimi CLI: `~/.kimi/config.toml`
 
 ## Local Development
 
