@@ -323,3 +323,40 @@ test('writes Kimi CLI providers and models and replaces earlier ModelSell models
   assert.equal(config.models['modelsell/claude-sonnet-5-5'].provider, 'modelsell-anthropic');
   assert.equal(config.models['modelsell/gpt-5.6-sol'].provider, 'modelsell-responses');
 });
+
+test('writes WorkBuddy models.json in the UI array format and keeps the user entries', async () => {
+  const home = await tempHome();
+  const file = path.join(home, '.workbuddy', 'models.json');
+  await mkdir(path.dirname(file), { recursive: true });
+  await writeFile(file, JSON.stringify([
+    { id: 'gpt-5.6-luna', name: 'luna', vendor: 'Custom', url: 'https://www.modelsell.com/v1/chat/completions', apiKey: 'old' },
+    { id: 'qwen3.7-plus', name: 'stale', vendor: 'Custom', url: 'https://www.modelsell.com/v1/chat/completions', apiKey: 'old' },
+    { id: 'local', name: 'Ollama', vendor: 'Custom', url: 'http://localhost:11434/v1/chat/completions' }
+  ]), 'utf8');
+
+  await applyConfiguration({ homeDir: home, targets: ['workbuddy'], apiKey: 'sk-wb', recommendations, model: 'qwen3.7-plus' });
+
+  const models = JSON.parse(await readFile(file, 'utf8'));
+  assert.ok(Array.isArray(models));
+  assert.deepEqual(models.map(m => m.id), ['qwen3.7-plus', 'gpt-5.6-sol', 'claude-sonnet-5-5', 'claude-haiku-5-5', 'kimi-k3.1-pro', 'gpt-5.6-luna', 'local']);
+  assert.deepEqual(models[0], {
+    id: 'qwen3.7-plus', name: 'qwen3.7-plus (ModelSell)', vendor: 'Custom', url: 'https://www.modelsell.com/v1/chat/completions',
+    apiKey: 'sk-wb', supportsToolCall: true, supportsImages: false, useCustomProtocol: false, maxInputTokens: 1000000, maxOutputTokens: 131072
+  });
+  assert.equal(models.find(m => m.id === 'gpt-5.6-luna').apiKey, 'old');
+});
+
+test('writes CodeBuddy models.json in the object format its CLI reads', async () => {
+  const home = await tempHome();
+  const file = path.join(home, '.codebuddy', 'models.json');
+  await mkdir(path.dirname(file), { recursive: true });
+  await writeFile(file, JSON.stringify({ models: [{ id: 'mine', url: 'https://example.com/v1/chat/completions' }], availableModels: ['mine'] }), 'utf8');
+
+  await applyConfiguration({ homeDir: home, targets: ['codebuddy'], apiKey: 'sk-cb', recommendations });
+
+  const config = JSON.parse(await readFile(file, 'utf8'));
+  assert.equal(config.models[0].id, 'gpt-5.6-sol');
+  assert.equal(config.models.at(-1).id, 'mine');
+  assert.deepEqual(config.availableModels.slice(-1), ['mine']);
+  assert.ok(config.availableModels.includes('claude-sonnet-5-5'));
+});

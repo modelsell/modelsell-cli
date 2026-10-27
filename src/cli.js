@@ -8,7 +8,7 @@ const TRANSLATIONS = {
   en: {
     usage: 'Usage:',
     options: 'Options:',
-    targetOption: '--target <list>       codex,claude,gemini,openclaw,opencode,qwen,crush,droid,kimi or all (default: all)',
+    targetOption: '--target <list>       codex,claude,gemini,openclaw,opencode,qwen,crush,droid,kimi,workbuddy,codebuddy or all (default: all)',
     baseUrlOption: `--base-url <url>      API base URL (default: ${DEFAULT_BASE_URL})`,
     apiKeyOption: '--api-key <key>       API key. If omitted, you will be prompted.',
     modelOption: '--model <model>       Use one model for all selected CLIs',
@@ -18,7 +18,7 @@ const TRANSLATIONS = {
     opencodeModelOption: '--<target>-model <name> Model for one target, e.g. --qwen-model',
     yesOption: '--yes                Accept defaults for omitted base URL and models',
     helpOption: '-h, --help           Show this help',
-    subtitle: 'Configure Codex, Claude Code, Gemini CLI, OpenClaw, OpenCode, Qwen Code, Crush, Droid, and Kimi CLI',
+    subtitle: 'Configure Codex, Claude Code, Gemini CLI, OpenClaw, OpenCode, Qwen Code, Crush, Droid, Kimi CLI, WorkBuddy, and CodeBuddy',
     selectTargets: 'Select what you want to configure:',
     allLabel: 'All',
     allDetail: 'Configure every supported tool',
@@ -31,13 +31,15 @@ const TRANSLATIONS = {
     crushDetail: 'Charm Crush',
     droidDetail: 'Factory Droid',
     kimiDetail: 'Kimi Code CLI',
+    workbuddyDetail: 'Tencent WorkBuddy',
+    codebuddyDetail: 'Tencent CodeBuddy',
     choosePrompt: 'Choose',
     baseUrlPrompt: 'Base URL',
     apiKeyPrompt: 'API key',
     modelSuffix: 'model',
     updated: 'ModelSell configuration updated:',
     catalogFallback: 'Model catalog unavailable; using built-in default models.',
-    chooseInvalid: 'Please choose 1-10, or type target names separated by commas, or all.',
+    chooseInvalid: 'Please choose 1-12, or type target names separated by commas, or all.',
     missingValue: 'Missing value for',
     unexpectedArgument: 'Unexpected argument',
     unknownCommand: 'Unknown command',
@@ -48,7 +50,7 @@ const TRANSLATIONS = {
   zh: {
     usage: '用法:',
     options: '选项:',
-    targetOption: '--target <list>       codex、claude、gemini、openclaw、opencode、qwen、crush、droid、kimi 或 all（默认: all）',
+    targetOption: '--target <list>       codex、claude、gemini、openclaw、opencode、qwen、crush、droid、kimi、workbuddy、codebuddy 或 all（默认: all）',
     baseUrlOption: `--base-url <url>      API 基础 URL（默认: ${DEFAULT_BASE_URL}）`,
     apiKeyOption: '--api-key <key>       API 密钥。未提供时会提示输入。',
     modelOption: '--model <model>       为所有选中的 CLI 使用同一个模型',
@@ -58,7 +60,7 @@ const TRANSLATIONS = {
     opencodeModelOption: '--<target>-model <name> 指定某个工具的模型，例如 --qwen-model',
     yesOption: '--yes                对未提供的基础 URL 和模型使用默认值',
     helpOption: '-h, --help           显示帮助',
-    subtitle: '配置 Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Droid 和 Kimi CLI',
+    subtitle: '配置 Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Droid、Kimi CLI、WorkBuddy 和 CodeBuddy',
     selectTargets: '请选择要配置的工具:',
     allLabel: '全部',
     allDetail: '配置全部支持的工具',
@@ -71,13 +73,15 @@ const TRANSLATIONS = {
     crushDetail: 'Charm Crush',
     droidDetail: 'Factory Droid',
     kimiDetail: 'Kimi Code CLI',
+    workbuddyDetail: '腾讯 WorkBuddy 办公工作台',
+    codebuddyDetail: '腾讯 CodeBuddy',
     choosePrompt: '请选择',
     baseUrlPrompt: '基础 URL',
     apiKeyPrompt: 'API 密钥',
     modelSuffix: '模型',
     updated: 'ModelSell 配置已更新:',
     catalogFallback: '无法获取模型目录，使用内置默认模型。',
-    chooseInvalid: '请选择 1-10，或输入以逗号分隔的工具名，或 all。',
+    chooseInvalid: '请选择 1-12，或输入以逗号分隔的工具名，或 all。',
     missingValue: '缺少参数值',
     unexpectedArgument: '不支持的参数',
     unknownCommand: '未知命令',
@@ -112,7 +116,7 @@ ${API_HELP}`.trim();
 
 export async function run(argv = process.argv.slice(2), env = process.env, io = {}) {
   if (API_COMMANDS.has(argv[0])) return runAPI(argv, env, io);
-  if (argv[0] === '--version') { writeLine(io, '0.4.0'); return 0; }
+  if (argv[0] === '--version') { writeLine(io, '0.5.0'); return 0; }
   const t = getTranslations(env);
   const command = argv[0] && !argv[0].startsWith('-') ? argv[0] : 'configure';
   const args = argv[0] && !argv[0].startsWith('-') ? argv.slice(1) : argv;
@@ -291,7 +295,9 @@ function targetChoices(t) {
     { key: 'qwen', label: 'Qwen Code', detail: t.qwenDetail },
     { key: 'crush', label: 'Crush', detail: t.crushDetail },
     { key: 'droid', label: 'Droid', detail: t.droidDetail },
-    { key: 'kimi', label: 'Kimi CLI', detail: t.kimiDetail }
+    { key: 'kimi', label: 'Kimi CLI', detail: t.kimiDetail },
+    { key: 'workbuddy', label: 'WorkBuddy', detail: t.workbuddyDetail },
+    { key: 'codebuddy', label: 'CodeBuddy', detail: t.codebuddyDetail }
   ];
 }
 
@@ -323,7 +329,9 @@ function displayName(target) {
     qwen: 'Qwen Code',
     crush: 'Crush',
     droid: 'Droid',
-    kimi: 'Kimi CLI'
+    kimi: 'Kimi CLI',
+    workbuddy: 'WorkBuddy',
+    codebuddy: 'CodeBuddy'
   }[target];
 }
 

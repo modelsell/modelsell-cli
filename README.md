@@ -1,7 +1,7 @@
 # ModelSell CLI
 
 在终端调用 ModelSell 的文本、图片、视频、音频和 3D 模型，也可以一键配置
-Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Factory Droid 和 Kimi CLI。
+Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Factory Droid、Kimi CLI、WorkBuddy 和 CodeBuddy。
 
 Run ModelSell text, image, video, audio, and 3D models from your terminal, and
 configure your coding agents with the same CLI.
@@ -10,6 +10,7 @@ configure your coding agents with the same CLI.
 [模型调用指南](docs/model-api.md) ·
 [GitHub Releases](https://github.com/modelsell/modelsell-cli/releases/latest)
 
+**v0.5.0** 新增腾讯 WorkBuddy、CodeBuddy 一键配置。
 **v0.4.0** 修复 Codex 配置不发送 Key 的问题，适配 Claude Code、OpenClaw 等最新的第三方模型配置方式，
 新增 OpenCode、Qwen Code、Crush、Factory Droid、Kimi CLI 一键配置，默认模型跟随实时目录。
 **v0.3.0** 新增 `modelsell mcp` 服务和 Codex 插件，Codex、Claude Code、Gemini CLI 等 Agent
@@ -55,7 +56,7 @@ Default API base URL: `https://www.modelsell.com`
 | MCP 与 Codex 插件 | `mcp` 为 Agent 提供模型调用工具；Codex 插件内置该服务（v0.3.0） |
 | 配额与价格 | `usage` 查询当前 Key 的 quota，`price` 查询公开价格元信息 |
 
-编程工具配置支持 Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Factory Droid、Kimi CLI：
+编程工具配置支持 Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Factory Droid、Kimi CLI、WorkBuddy、CodeBuddy：
 
 - 交互式配置：运行 `modelsell` 后按提示选择要配置的工具。
 - 非交互式配置：适合脚本、自动化部署或快速初始化环境。
@@ -75,6 +76,7 @@ Default API base URL: `https://www.modelsell.com`
   `modelsell auth token` 读取，不写入文件。
 - Factory Droid：写入 `customModels`，通过 `apiKeyHelper` 读取 Key。
 - Kimi CLI：写入 ModelSell provider 与模型，默认使用最新的 Kimi 模型。
+- WorkBuddy / CodeBuddy（腾讯）：写入 `models.json` 自定义模型，保留你已有的模型，保存后自动生效。
 - 安全备份：写入前会自动备份已有配置文件，备份后缀为 `.bak.<timestamp>`。
 
 ### 一键安装
@@ -364,7 +366,7 @@ modelsell configure --target codex --api-key sk-xxx --yes
 支持的 `--target` 值：
 
 ```text
-all, codex, claude, gemini, openclaw, opencode, qwen, crush, droid, kimi
+all, codex, claude, gemini, openclaw, opencode, qwen, crush, droid, kimi, workbuddy, codebuddy
 ```
 
 可以用 `--<target>-model` 为单个工具指定模型，例如 `--qwen-model qwen3.7-plus`。
@@ -386,6 +388,8 @@ MODELSELL_API_KEY=sk-xxx modelsell configure --yes
 - Crush: `~/.config/crush/crushrc`、`~/.config/modelsell/credentials.json`
 - Factory Droid: `~/.factory/settings.json`、`~/.config/modelsell/credentials.json`
 - Kimi CLI: `~/.kimi/config.toml`
+- WorkBuddy: `~/.workbuddy/models.json`
+- CodeBuddy: `~/.codebuddy/models.json`
 
 ## English
 
@@ -409,7 +413,7 @@ Main features:
 | MCP and Codex plugin | `mcp` gives agents model invocation tools; the Codex plugin bundles it (v0.3.0) |
 | Quota and pricing | `usage` retrieves key quota; `price` retrieves public pricing metadata |
 
-Agent setup supports Codex, Claude Code, Gemini CLI, OpenClaw, OpenCode, Qwen Code, Crush, Factory Droid, and Kimi CLI:
+Agent setup supports Codex, Claude Code, Gemini CLI, OpenClaw, OpenCode, Qwen Code, Crush, Factory Droid, Kimi CLI, WorkBuddy, and CodeBuddy:
 
 - Interactive setup: run `modelsell` and follow the prompts.
 - Non-interactive setup: useful for scripts, automation, and environment
@@ -432,6 +436,7 @@ Agent setup supports Codex, Claude Code, Gemini CLI, OpenClaw, OpenCode, Qwen Co
   `modelsell auth token` and never written to the file.
 - Factory Droid: `customModels` entries that read the key with `apiKeyHelper`.
 - Kimi CLI: ModelSell providers and models, defaulting to the newest Kimi model.
+- WorkBuddy / CodeBuddy (Tencent): custom models in `models.json`, keeping your existing models; changes apply without a restart.
 - Safe backups: existing config files are backed up before writes with a
   `.bak.<timestamp>` suffix.
 
@@ -733,7 +738,7 @@ modelsell configure --target codex --api-key sk-xxx --yes
 Supported `--target` values:
 
 ```text
-all, codex, claude, gemini, openclaw, opencode, qwen, crush, droid, kimi
+all, codex, claude, gemini, openclaw, opencode, qwen, crush, droid, kimi, workbuddy, codebuddy
 ```
 
 Use `--<target>-model` to choose a model for one tool, for example `--qwen-model qwen3.7-plus`.
@@ -755,6 +760,8 @@ MODELSELL_API_KEY=sk-xxx modelsell configure --yes
 - Crush: `~/.config/crush/crushrc`, `~/.config/modelsell/credentials.json`
 - Factory Droid: `~/.factory/settings.json`, `~/.config/modelsell/credentials.json`
 - Kimi CLI: `~/.kimi/config.toml`
+- WorkBuddy: `~/.workbuddy/models.json`
+- CodeBuddy: `~/.codebuddy/models.json`
 
 ## Local Development
 

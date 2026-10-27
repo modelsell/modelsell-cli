@@ -5,7 +5,7 @@ import { recommendModels, routeOf } from './agent-models.js';
 import { configDir, saveJSON } from './api/config.js';
 
 export const DEFAULT_BASE_URL = 'https://www.modelsell.com';
-export const DEFAULT_TARGETS = ['codex', 'claude', 'gemini', 'openclaw', 'opencode', 'qwen', 'crush', 'droid', 'kimi'];
+export const DEFAULT_TARGETS = ['codex', 'claude', 'gemini', 'openclaw', 'opencode', 'qwen', 'crush', 'droid', 'kimi', 'workbuddy', 'codebuddy'];
 
 export function getDefaultModel(target, recommendations = recommendModels()) {
   return { claude: recommendations.claude, gemini: recommendations.gemini, qwen: recommendations.qwen, kimi: recommendations.kimi }[target] ?? recommendations.codex;
@@ -16,7 +16,8 @@ export async function applyConfiguration(options) {
   const results = [];
   const writers = {
     codex: configureCodex, claude: configureClaude, gemini: configureGemini, openclaw: configureOpenClaw,
-    opencode: configureOpenCode, qwen: configureQwen, crush: configureCrush, droid: configureDroid, kimi: configureKimi
+    opencode: configureOpenCode, qwen: configureQwen, crush: configureCrush, droid: configureDroid, kimi: configureKimi,
+    workbuddy: options => configureBuddy(options, 'workbuddy'), codebuddy: options => configureBuddy(options, 'codebuddy')
   };
 
   for (const target of normalized.targets) {
@@ -399,6 +400,50 @@ async function configureKimi(options) {
 
   await writeFile(filePath, TOML.stringify(config), { mode: 0o600 });
   return { target: 'kimi', files: [filePath] };
+}
+
+// WorkBuddy and CodeBuddy read custom models from models.json in their data directory
+// (WORKBUDDY_CONFIG_DIR / CODEBUDDY_CONFIG_DIR override it) and reload it on change. WorkBuddy's
+// UI saves a bare array; CodeBuddy's CLI only reads the { models, availableModels } form.
+async function configureBuddy(options, target) {
+  const envDir = target === 'workbuddy' ? options.env?.WORKBUDDY_CONFIG_DIR : options.env?.CODEBUDDY_CONFIG_DIR;
+  const filePath = path.join(envDir?.trim() || path.join(options.homeDir, `.${target}`), 'models.json');
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await backupIfExists(filePath);
+
+  let current;
+  try { current = JSON.parse(stripUtf8Bom(await readFile(filePath, 'utf8')) || 'null'); }
+  catch (error) { if (error.code !== 'ENOENT') throw new Error(`Failed to read JSON config ${filePath}: ${error.message}`); }
+  const asArray = Array.isArray(current) || (current == null && target === 'workbuddy');
+  const existing = Array.isArray(current) ? current : Array.isArray(current?.models) ? current.models : [];
+
+  const model = pickModel(options, target);
+  const url = `${ensureV1Url(options.baseUrl)}/chat/completions`;
+  const models = agentModels(options, model).sort((a, b) => (b.id === model) - (a.id === model));
+  const ids = new Set(models.map(m => m.id));
+  // Keep the user's own entries, including ModelSell models this run does not manage.
+  const others = existing.filter(m => !(ids.has(m?.id) && isModelSellUrl(String(m?.url || '').replace(/\/chat\/completions\/?$/, ''), options)));
+  const entries = models.map(m => ({
+    id: m.id,
+    name: `${m.name || m.id} (ModelSell)`,
+    vendor: 'Custom',
+    url,
+    apiKey: options.apiKey,
+    supportsToolCall: true,
+    supportsImages: Boolean(m.input?.includes('image')),
+    useCustomProtocol: false,
+    ...(m.contextWindow ? { maxInputTokens: m.contextWindow } : {}),
+    ...(m.maxTokens ? { maxOutputTokens: m.maxTokens } : {})
+  }));
+  const list = [...entries, ...others];
+  const next = asArray ? list : {
+    ...(isPlainObject(current) ? current : {}),
+    models: list,
+    ...(Array.isArray(current?.availableModels) ? { availableModels: [...new Set([...entries.map(m => m.id), ...current.availableModels])] } : {})
+  };
+
+  await writeJson(filePath, next);
+  return { target, files: [filePath] };
 }
 
 function pickModel(options, target) {

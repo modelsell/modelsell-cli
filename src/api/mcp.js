@@ -164,7 +164,7 @@ export async function serveMCP({ runAPI, env, flags, stdin, stdout, stderr, cwd,
       return {
         protocolVersion: PROTOCOL_VERSIONS.includes(params.protocolVersion) ? params.protocolVersion : PROTOCOL_VERSIONS[0],
         capabilities: { tools: {} },
-        serverInfo: { name: 'modelsell', version: '0.4.0' },
+        serverInfo: { name: 'modelsell', version: '0.5.0' },
         instructions: 'Use modelsell_list_models to find a model, modelsell_describe_model to see its parameters and docs, then modelsell_run_model. Never resubmit a billable job after a timeout; resume it with modelsell_get_task.'
       };
     }

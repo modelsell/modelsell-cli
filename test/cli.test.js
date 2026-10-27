@@ -57,7 +57,7 @@ test('prints Chinese help for Chinese locales', async () => {
     console.log = originalLog;
   }
   assert.match(lines.join('\n'), /用法:/);
-  assert.match(lines.join('\n'), /配置 Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Droid 和 Kimi CLI/);
+  assert.match(lines.join('\n'), /配置 Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Droid、Kimi CLI、WorkBuddy 和 CodeBuddy/);
 });
 
 test('configures selected target in non-interactive mode', async () => {
@@ -213,7 +213,7 @@ test('interactive mode uses Chinese descriptions and prompts for Chinese locales
   });
 
   assert.equal(code, 0);
-  assert.match(output.join('\n'), /配置 Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Droid 和 Kimi CLI/);
+  assert.match(output.join('\n'), /配置 Codex、Claude Code、Gemini CLI、OpenClaw、OpenCode、Qwen Code、Crush、Droid、Kimi CLI、WorkBuddy 和 CodeBuddy/);
   assert.match(output.join('\n'), /请选择要配置的工具/);
   assert.deepEqual(prompts, [
     '请选择 [1]: ',
@@ -227,7 +227,7 @@ test('renders colorful ModelSell CLI banner', () => {
   const banner = renderBanner({ color: true });
   assert.match(banner, /\u001b\[/);
   assert.match(banner, /ModelSell CLI/);
-  assert.match(banner, /Configure Codex, Claude Code, Gemini CLI, OpenClaw, OpenCode, Qwen Code, Crush, Droid, and Kimi CLI/);
+  assert.match(banner, /Configure Codex, Claude Code, Gemini CLI, OpenClaw, OpenCode, Qwen Code, Crush, Droid, Kimi CLI, WorkBuddy, and CodeBuddy/);
 });
 
 test('interactive OpenClaw configuration does not prompt for a single model', async () => {
@@ -263,6 +263,8 @@ test('renders Gemini-like numbered target menu', () => {
   assert.match(menu, /5\. OpenClaw/);
   assert.match(menu, /6\. OpenCode/);
   assert.match(menu, /10\. Kimi CLI/);
+  assert.match(menu, /11\. WorkBuddy/);
+  assert.match(menu, /12\. CodeBuddy/);
 });
 
 test('interactive Codex defaults come from the key-scoped live catalog', async () => {

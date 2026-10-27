@@ -1,6 +1,6 @@
 {
   "name": "modelsell-cli",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Run Modelsell AI models from your terminal and configure coding agents.",
   "type": "module",
   "license": "MIT",

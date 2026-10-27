@@ -1,6 +1,6 @@
 {
   "name": "modelsell",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Discover and run ModelSell text, image, video, audio, embedding, and 3D models from Codex through the modelsell CLI.",
   "author": {
     "name": "ModelSell",
